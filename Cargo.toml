@@ -1,0 +1,17 @@
+[package]
+name = "daktronics-allsport-5000"
+version = "0.1.0"
+authors = ["zabackary"]
+description = "A Rust implementation of decoders for the Daktronics All Sport 5000's serial output"
+license = "MIT"
+homepage = "https://github.com/zabackary/daktronics-allsport-5000-rs"
+repository = "https://github.com/zabackary/daktronics-allsport-5000-rs"
+documentation = "http://docs.rs/daktronics-allsport-5000"
+readme = "README.md"
+keywords = ["daktronics", "daktronics-allsport-5000"]
+categories = ["asynchronous", "hardware-support"]
+edition = "2021"
+
+[dependencies]
+tokio = { version = "^1.38.0", default-features = false }
+tokio-serial = "^5.4.4"
