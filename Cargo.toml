@@ -13,5 +13,7 @@ categories = ["asynchronous", "hardware-support"]
 edition = "2021"
 
 [dependencies]
-tokio = { version = "^1.38.0", default-features = false }
-tokio-serial = "^5.4.4"
+futures-util = "^0.3.30"
+tokio = { version = "^1.38.0", default-features = false, features = ["full"] }
+tokio-serial = { version = "^5.4.4", features = ["codec"] }
+tokio-util = "^0.7.11"

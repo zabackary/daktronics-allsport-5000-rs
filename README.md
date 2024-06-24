@@ -5,8 +5,9 @@
 
 ## Development goals
 
-- Provide an implementation for reading from serial `DakSerialRTDReader` that
-  implements `std::io::Read` using `tokio-serial`
+- Provide a codec to read packets from the serial output `SerialRTDCodec`
+- Provide a convince struct for reading packets from a serial connection into
+  `SerialRTDCodec`
 - Provide a struct to hold the entire data structure in memory `Daktronics`
   given a size (different sports have different sizes, I believe)
   - Provide a way to get arbitrary fields from the response given a slice

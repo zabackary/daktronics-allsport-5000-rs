@@ -1,4 +1,1 @@
-#[cfg(test)]
-mod tests {
-    use super::*;
-}
+pub mod codecs;
