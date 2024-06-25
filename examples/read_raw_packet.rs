@@ -1,6 +1,6 @@
 use std::env;
 
-use daktronics_allsport_5000::{codecs, parser};
+use daktronics_allsport_5000::codecs;
 use futures_util::StreamExt;
 use tokio_serial::SerialPortBuilderExt;
 use tokio_util::codec::Decoder;
@@ -32,8 +32,7 @@ async fn main() -> tokio_serial::Result<()> {
     let mut reader = codecs::SerialRTDCodec::default().framed(port);
 
     while let Some(packet_bytes_result) = reader.next().await {
-        let packet_bytes = packet_bytes_result.expect("failed to read packet");
-        let packet = parser::Packet::try_from(&packet_bytes[..]).expect("failed to parse packet");
+        let packet = packet_bytes_result.expect("failed to read packet");
         println!("{:?}", packet);
     }
     Ok(())

@@ -1,9 +1,11 @@
+mod parser;
+
+use bytes::{Buf, Bytes, BytesMut};
+pub use parser::{Packet, PacketParseError};
+
 use std::{fmt, io};
 
-use tokio_util::{
-    bytes::{Buf, Bytes},
-    codec::Decoder,
-};
+use tokio_util::codec::Decoder;
 
 pub struct SerialRTDCodec {
     state: SerialRTDCodecState,
@@ -30,13 +32,10 @@ enum SerialRTDCodecState {
 }
 
 impl Decoder for SerialRTDCodec {
-    type Item = Bytes;
+    type Item = parser::Packet;
     type Error = SerialRTDCodecError;
 
-    fn decode(
-        &mut self,
-        buf: &mut tokio_util::bytes::BytesMut,
-    ) -> Result<Option<Self::Item>, Self::Error> {
+    fn decode(&mut self, buf: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
         match &mut self.state {
             SerialRTDCodecState::ReadingSyncIdle => {
                 // Look for the SYNC IDLE end byte
@@ -64,7 +63,11 @@ impl Decoder for SerialRTDCodec {
                         // Prepare to read the next frame next `decode` pass
                         self.state = SerialRTDCodecState::ReadingSyncIdle;
                         // Return the frame
-                        Ok(Some(data.into()))
+                        Ok(Some(
+                            Bytes::from(data)
+                                .try_into()
+                                .map_err(SerialRTDCodecError::PacketParseError)?,
+                        ))
                     }
                     // We haven't found the byte yet, so resume the search next
                     // time
@@ -80,6 +83,8 @@ impl Decoder for SerialRTDCodec {
 
 #[derive(Debug)]
 pub enum SerialRTDCodecError {
+    /// Couldn't parse a packet.
+    PacketParseError(PacketParseError),
     /// An IO error occurred.
     Io(io::Error),
 }
@@ -88,6 +93,7 @@ impl fmt::Display for SerialRTDCodecError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             SerialRTDCodecError::Io(e) => write!(f, "{}", e),
+            SerialRTDCodecError::PacketParseError(e) => write!(f, "{}", e),
         }
     }
 }

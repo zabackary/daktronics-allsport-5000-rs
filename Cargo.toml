@@ -13,10 +13,18 @@ categories = ["asynchronous", "hardware-support"]
 edition = "2021"
 
 [dependencies]
-tokio = { version = "^1.38.0", default-features = false }
-tokio-serial = { version = "^5.4.4", features = ["codec"] }
-tokio-util = "^0.7.11"
+bytes = "^1.6.0"
+futures-util = { verison = "^0.3.30", optional = true }
+tokio = { version = "^1.38.0", default-features = false, optional = true }
+tokio-serial = { version = "^5.4.4", features = ["codec"], optional = true }
+tokio-util = { version = "^0.7.11", optional = true }
 
 [dev-dependencies]
 futures-util = "^0.3.30"
 tokio = { version = "^1.38.0", features = ["full"] }
+
+[features]
+default = ["tokio-serial"]
+tokio-serial = ["async", "dep:tokio", "dep:tokio-util", "dep:tokio-serial"]
+async = ["dep:futures-util"]
+serial = []
