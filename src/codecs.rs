@@ -44,7 +44,6 @@ impl Decoder for SerialRTDCodec {
                     Some(position) => {
                         // We found the byte, advance the cursor past it
                         buf.advance(position + 1);
-                        eprintln!("sync idle done");
                         // Prepare to read the data next `decode` pass
                         self.state = SerialRTDCodecState::ReadingData { next_index: 0 }
                     }
@@ -57,7 +56,6 @@ impl Decoder for SerialRTDCodec {
                 // Look for the body end byte
                 match buf[*next_index..].iter().position(|b| *b == 0x17) {
                     Some(position_offset) => {
-                        eprintln!("terminating frame");
                         let position = *next_index + position_offset;
                         // We found the byte, terminate the frame
                         let mut data = buf.split_to(position + 1);
