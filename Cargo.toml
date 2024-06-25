@@ -14,7 +14,7 @@ edition = "2021"
 
 [dependencies]
 bytes = "^1.6.0"
-futures-util = { verison = "^0.3.30", optional = true }
+futures-util = { version = "^0.3.30", optional = true }
 tokio = { version = "^1.38.0", default-features = false, optional = true }
 tokio-serial = { version = "^5.4.4", features = ["codec"], optional = true }
 tokio-util = { version = "^0.7.11", optional = true }
