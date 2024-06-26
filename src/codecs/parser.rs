@@ -1,6 +1,6 @@
 use std::{fmt, num::ParseIntError};
 
-use bytes::Bytes;
+use bytes::{Buf, Bytes};
 
 #[derive(Debug, Clone)]
 pub struct Packet {
@@ -42,6 +42,7 @@ impl TryFrom<Bytes> for Packet {
                 .position(|b| *b == 0x01)
                 .ok_or(PacketParseError::IllFormed)?,
         );
+        value.advance(1); // skip the separator byte
 
         // extract the data position
         let header = value.split_to(
@@ -50,12 +51,15 @@ impl TryFrom<Bytes> for Packet {
                 .position(|b| *b == 0x02)
                 .ok_or(PacketParseError::IllFormed)?,
         );
+        value.advance(1); // skip the separator byte
         let start_index: u32 = std::str::from_utf8(
             header
                 // take off the packet prefix
                 .strip_prefix(HEADER_PREFIX)
                 // if the prefix doesn't exist, we're handling an unsupported packet type
-                .ok_or(PacketParseError::UnsupportedPacket)?,
+                .ok_or_else(|| PacketParseError::UnsupportedPacket {
+                    header_bytes: header.clone(),
+                })?,
         )
         .map_err(|_| PacketParseError::BadTextEncoding)?
         .parse()
@@ -68,6 +72,7 @@ impl TryFrom<Bytes> for Packet {
                 .position(|b| *b == 0x04)
                 .ok_or(PacketParseError::IllFormed)?,
         );
+        value.advance(1); // skip the separator byte
 
         // extract the checksum (don't know the hash algorithm, so skipping)
         let _ = value;
@@ -78,7 +83,7 @@ impl TryFrom<Bytes> for Packet {
 
 #[derive(Debug)]
 pub enum PacketParseError {
-    UnsupportedPacket,
+    UnsupportedPacket { header_bytes: Bytes },
     IllFormed,
     BadTextEncoding,
     NumberParseFailure(ParseIntError),
@@ -87,7 +92,9 @@ pub enum PacketParseError {
 impl fmt::Display for PacketParseError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            PacketParseError::UnsupportedPacket => write!(f, "unsupported packet type"),
+            PacketParseError::UnsupportedPacket { header_bytes: _ } => {
+                write!(f, "unsupported packet type")
+            }
             PacketParseError::IllFormed => write!(f, "packet is ill-formed"),
             PacketParseError::BadTextEncoding => write!(f, "bad text encoding in packet"),
             PacketParseError::NumberParseFailure(e) => write!(f, "couldn't parse number: {}", e),
