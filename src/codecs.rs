@@ -7,6 +7,7 @@ use std::{fmt, io};
 
 use tokio_util::codec::Decoder;
 
+#[derive(Debug)]
 pub struct SerialRTDCodec {
     state: SerialRTDCodecState,
 }

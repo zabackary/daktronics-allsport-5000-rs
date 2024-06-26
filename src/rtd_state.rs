@@ -34,6 +34,7 @@ pub mod data_source {
 
         use crate::codecs::{Packet, SerialRTDCodec, SerialRTDCodecError};
 
+        #[derive(Debug)]
         pub struct SerialStreamDataSource {
             reader: Framed<SerialStream, SerialRTDCodec>,
         }
@@ -97,7 +98,7 @@ impl<DS: data_source::RtdStateDataSource> RtdState<DS> {
             .data_source
             .read_packet()
             .ok_or(RtdStateError::NoPacketData)?
-            .map_err(RtdStateError::DataStore)?;
+            .map_err(RtdStateError::DataSource)?;
         self.update_from_packet(packet)
     }
 
@@ -107,7 +108,7 @@ impl<DS: data_source::RtdStateDataSource> RtdState<DS> {
             .read_packet_async()
             .await
             .ok_or(RtdStateError::NoPacketData)?
-            .map_err(RtdStateError::DataStore)?;
+            .map_err(RtdStateError::DataSource)?;
         self.update_from_packet(packet)
     }
 
@@ -130,7 +131,7 @@ impl<DS: data_source::RtdStateDataSource> RtdState<DS> {
 
 #[derive(Debug)]
 pub enum RtdStateError<DS: data_source::RtdStateDataSource> {
-    DataStore(DS::Error),
+    DataSource(DS::Error),
     InvalidData,
     NoPacketData,
 }
