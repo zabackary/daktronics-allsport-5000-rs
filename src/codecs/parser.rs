@@ -49,6 +49,8 @@ impl TryFrom<Bytes> for Packet {
             value
                 .iter()
                 .position(|b| *b == 0x02)
+                // some packets don't have data, so extract until the checksum
+                .or_else(|| value.iter().position(|b| *b == 0x04))
                 .ok_or(PacketParseError::IllFormed)?,
         );
         value.advance(1); // skip the separator byte
