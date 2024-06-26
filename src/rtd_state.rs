@@ -1,9 +1,9 @@
 use bytes::BytesMut;
-use data_source::RtdStateDataSource;
+use data_source::RTDStateDataSource;
 
 use crate::codecs::Packet;
 
-pub struct RtdState<DS: RtdStateDataSource> {
+pub struct RTDState<DS: RTDStateDataSource> {
     data_source: DS,
     data: BytesMut,
 }
@@ -12,7 +12,7 @@ pub mod data_source {
 
     use crate::codecs::Packet;
 
-    pub trait RtdStateDataSource {
+    pub trait RTDStateDataSource {
         type Error;
 
         fn read_packet(&mut self) -> Option<Result<Packet, Self::Error>>;
@@ -27,7 +27,7 @@ pub mod data_source {
 
     #[cfg(feature = "async")]
     mod serial_stream_data_source {
-        use super::RtdStateDataSource;
+        use super::RTDStateDataSource;
         use futures_util::StreamExt;
         use tokio_serial::{SerialPort, SerialStream};
         use tokio_util::codec::{Decoder, Framed};
@@ -40,7 +40,7 @@ pub mod data_source {
             ignore_unsupported_packets: bool,
         }
 
-        impl RtdStateDataSource for SerialStreamDataSource {
+        impl RTDStateDataSource for SerialStreamDataSource {
             type Error = SerialRTDCodecError;
 
             fn read_packet(&mut self) -> Option<Result<Packet, SerialRTDCodecError>> {
@@ -80,7 +80,7 @@ pub mod data_source {
     }
 }
 
-impl RtdState<data_source::SerialStreamDataSource> {
+impl RTDState<data_source::SerialStreamDataSource> {
     #[cfg(feature = "tokio-serial")]
     pub fn from_serial_stream(
         serial_stream: tokio_serial::SerialStream,
@@ -93,7 +93,7 @@ impl RtdState<data_source::SerialStreamDataSource> {
     }
 }
 
-impl<DS: data_source::RtdStateDataSource> RtdState<DS> {
+impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
     pub fn new(data_source: DS) -> Self {
         // as far as I can tell from the docs, the largest sport only uses
         // ~1000 bytes of space
@@ -113,12 +113,12 @@ impl<DS: data_source::RtdStateDataSource> RtdState<DS> {
     /// new data.
     ///
     /// DO NOT USE IF YOU'RE USING ASYNC
-    pub fn update(&mut self) -> Result<bool, RtdStateError<DS>> {
+    pub fn update(&mut self) -> Result<bool, RTDStateError<DS>> {
         let packet = match self.data_source.read_packet() {
             None => return Ok(false),
             Some(x) => x,
         }
-        .map_err(RtdStateError::DataSource)?;
+        .map_err(RTDStateError::DataSource)?;
         self.update_from_packet(packet).map(|_| true)
     }
 
@@ -126,19 +126,19 @@ impl<DS: data_source::RtdStateDataSource> RtdState<DS> {
     /// from the data source. Returns a boolean indicating whether there's any
     /// new data in the state from the packet.
     #[cfg(feature = "async")]
-    pub async fn update_async(&mut self) -> Result<bool, RtdStateError<DS>> {
+    pub async fn update_async(&mut self) -> Result<bool, RTDStateError<DS>> {
         let packet = match self.data_source.read_packet_async().await {
             None => return Ok(false),
             Some(x) => x,
         }
-        .map_err(RtdStateError::DataSource)?;
+        .map_err(RTDStateError::DataSource)?;
         self.update_from_packet(packet).map(|_| true)
     }
 
     /// Updates the internal state based on the contents of a packet. Usually,
     /// you'll want to read a packet from a [RtdStateDataSource] using `update`
     /// or `update_async` (if that's what you're doing)
-    pub fn update_from_packet(&mut self, packet: Packet) -> Result<(), RtdStateError<DS>> {
+    pub fn update_from_packet(&mut self, packet: Packet) -> Result<(), RTDStateError<DS>> {
         let packet_data = packet.raw_data();
         self.data[packet.start_index as usize..packet.start_index as usize + packet_data.len()]
             .copy_from_slice(&packet_data);
@@ -151,7 +151,7 @@ impl<DS: data_source::RtdStateDataSource> RtdState<DS> {
 }
 
 #[derive(Debug)]
-pub enum RtdStateError<DS: data_source::RtdStateDataSource> {
+pub enum RTDStateError<DS: data_source::RTDStateDataSource> {
     DataSource(DS::Error),
     InvalidData,
     NoPacketData,
