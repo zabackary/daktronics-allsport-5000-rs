@@ -1,7 +1,5 @@
-mod parser;
-
+use super::packet::{Packet, PacketParseError};
 use bytes::{Buf, Bytes, BytesMut};
-pub use parser::{Packet, PacketParseError};
 
 use std::{fmt, io};
 
@@ -33,7 +31,7 @@ enum SerialRTDCodecState {
 }
 
 impl Decoder for SerialRTDCodec {
-    type Item = parser::Packet;
+    type Item = Packet;
     type Error = SerialRTDCodecError;
 
     fn decode(&mut self, buf: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {

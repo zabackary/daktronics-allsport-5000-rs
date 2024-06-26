@@ -3,7 +3,8 @@ use futures_util::StreamExt;
 use tokio_serial::{SerialPort, SerialStream};
 use tokio_util::codec::{Decoder, Framed};
 
-use crate::codecs::{Packet, PacketParseError, SerialRTDCodec, SerialRTDCodecError};
+use crate::codecs::{SerialRTDCodec, SerialRTDCodecError};
+use crate::packet::{Packet, PacketParseError};
 
 #[derive(Debug)]
 pub struct SerialStreamDataSource {

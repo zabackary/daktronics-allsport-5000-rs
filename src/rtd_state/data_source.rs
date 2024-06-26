@@ -1,4 +1,4 @@
-use crate::codecs::Packet;
+use crate::packet::Packet;
 
 pub trait RTDStateDataSource {
     type Error;

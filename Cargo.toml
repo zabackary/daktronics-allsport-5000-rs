@@ -25,6 +25,7 @@ tokio = { version = "^1.38.0", features = ["full"] }
 
 [features]
 default = ["tokio-serial"]
-tokio-serial = ["async", "dep:tokio", "dep:tokio-util", "dep:tokio-serial"]
+tokio-serial = ["tokio", "dep:tokio-serial"]
+tokio = ["async", "dep:tokio", "dep:tokio-util"]
 async = ["dep:futures-util"]
 serial = []
