@@ -32,11 +32,12 @@ pub mod data_source {
         use tokio_serial::{SerialPort, SerialStream};
         use tokio_util::codec::{Decoder, Framed};
 
-        use crate::codecs::{Packet, SerialRTDCodec, SerialRTDCodecError};
+        use crate::codecs::{Packet, PacketParseError, SerialRTDCodec, SerialRTDCodecError};
 
         #[derive(Debug)]
         pub struct SerialStreamDataSource {
             reader: Framed<SerialStream, SerialRTDCodec>,
+            ignore_unsupported_packets: bool,
         }
 
         impl RtdStateDataSource for SerialStreamDataSource {
@@ -47,13 +48,24 @@ pub mod data_source {
             }
 
             async fn read_packet_async(&mut self) -> Option<Result<Packet, SerialRTDCodecError>> {
-                self.reader.next().await
+                let res = self.reader.next().await;
+                if self.ignore_unsupported_packets {
+                    match res {
+                        Some(Err(SerialRTDCodecError::PacketParseError(
+                            PacketParseError::UnsupportedPacket { header_bytes: _ },
+                        ))) => None,
+                        x => x,
+                    }
+                } else {
+                    res
+                }
             }
         }
 
         impl SerialStreamDataSource {
             pub fn new(
                 mut serial_stream: tokio_serial::SerialStream,
+                ignore_unsupported_packets: bool,
             ) -> Result<Self, tokio_serial::Error> {
                 // set up the serial port for use
                 serial_stream.set_parity(tokio_serial::Parity::None)?;
@@ -61,6 +73,7 @@ pub mod data_source {
 
                 Ok(Self {
                     reader: SerialRTDCodec::default().framed(serial_stream),
+                    ignore_unsupported_packets,
                 })
             }
         }
@@ -71,9 +84,11 @@ impl RtdState<data_source::SerialStreamDataSource> {
     #[cfg(feature = "tokio-serial")]
     pub fn from_serial_stream(
         serial_stream: tokio_serial::SerialStream,
+        ignore_unsupported_packets: bool,
     ) -> Result<Self, tokio_serial::Error> {
         Ok(Self::new(data_source::SerialStreamDataSource::new(
             serial_stream,
+            ignore_unsupported_packets,
         )?))
     }
 }
@@ -93,23 +108,31 @@ impl<DS: data_source::RtdStateDataSource> RtdState<DS> {
         Self { data, data_source }
     }
 
-    pub fn update(&mut self) -> Result<(), RtdStateError<DS>> {
-        let packet = self
-            .data_source
-            .read_packet()
-            .ok_or(RtdStateError::NoPacketData)?
-            .map_err(RtdStateError::DataSource)?;
-        self.update_from_packet(packet)
+    /// Updates the state synchronously with the next packet that can be read
+    /// from the data source. Returns a boolean indicating whether there's any
+    /// new data.
+    ///
+    /// DO NOT USE IF YOU'RE USING ASYNC
+    pub fn update(&mut self) -> Result<bool, RtdStateError<DS>> {
+        let packet = match self.data_source.read_packet() {
+            None => return Ok(false),
+            Some(x) => x,
+        }
+        .map_err(RtdStateError::DataSource)?;
+        self.update_from_packet(packet).map(|_| true)
     }
 
-    pub async fn update_async(&mut self) -> Result<(), RtdStateError<DS>> {
-        let packet = self
-            .data_source
-            .read_packet_async()
-            .await
-            .ok_or(RtdStateError::NoPacketData)?
-            .map_err(RtdStateError::DataSource)?;
-        self.update_from_packet(packet)
+    /// Updates the state asynchronously with the next packet that can be read
+    /// from the data source. Returns a boolean indicating whether there's any
+    /// new data in the state from the packet.
+    #[cfg(feature = "async")]
+    pub async fn update_async(&mut self) -> Result<bool, RtdStateError<DS>> {
+        let packet = match self.data_source.read_packet_async().await {
+            None => return Ok(false),
+            Some(x) => x,
+        }
+        .map_err(RtdStateError::DataSource)?;
+        self.update_from_packet(packet).map(|_| true)
     }
 
     /// Updates the internal state based on the contents of a packet. Usually,
@@ -117,10 +140,8 @@ impl<DS: data_source::RtdStateDataSource> RtdState<DS> {
     /// or `update_async` (if that's what you're doing)
     pub fn update_from_packet(&mut self, packet: Packet) -> Result<(), RtdStateError<DS>> {
         let packet_data = packet.raw_data();
-        self.data
-            .split_at_mut(packet.start_index as usize)
-            .1
-            .clone_from_slice(&packet_data);
+        self.data[packet.start_index as usize..packet.start_index as usize + packet_data.len()]
+            .copy_from_slice(&packet_data);
         Ok(())
     }
 
