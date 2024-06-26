@@ -24,10 +24,15 @@ async fn main() -> tokio_serial::Result<()> {
     port.set_exclusive(false)
         .expect("Unable to set serial port exclusive to false");
 
-    let mut rtd_state = RtdState::from_serial_stream(port).unwrap();
+    let mut rtd_state = RtdState::from_serial_stream(port, true).unwrap();
 
-    while let Ok(_) = rtd_state.update_async().await {
+    let mut update_result = Ok(false);
+    while let Ok(_) = update_result {
         println!("{:?}", rtd_state.data().expect("couldn't read data buffer"));
+        update_result = rtd_state.update_async().await;
+    }
+    if let Err(e) = update_result {
+        eprintln!("{:?}", e);
     }
     Ok(())
 }
