@@ -26,10 +26,9 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
         // safety: the buffer is immediately filled with empty data after the
         // size is increased
         unsafe {
-            data.set_len(1000);
+            data.set_len(data.capacity());
+            data.fill(b' ');
         }
-        data.fill(b' ');
-        Self { data, data_source }
     }
 
     /// Updates the state synchronously with the next packet that can be read
