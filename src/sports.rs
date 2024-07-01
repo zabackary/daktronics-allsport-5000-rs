@@ -57,6 +57,20 @@ pub mod macros {
 
     #[doc(hidden)]
     #[macro_export]
+    macro_rules! __internal_replace_expr {
+        ($_t:tt $sub:expr) => {
+            $sub
+        };
+    }
+
+    #[doc(hidden)]
+    #[macro_export]
+    macro_rules! __internal_count_tts {
+        ($($tts:tt)*) => {<[()]>::len(&[$($crate::sports::macros::__internal_replace_expr!($tts ())),*])};
+    }
+
+    #[doc(hidden)]
+    #[macro_export]
     macro_rules! __internal_sport_builder_impl {
         (
         $ident_name:ident,
@@ -101,8 +115,48 @@ pub mod macros {
                         sport_builder_item!($($field)*);
                     )*
                 }
+
+                #[cfg(feature = "serde")]
+                impl<DS: $crate::rtd_state::data_source::RTDStateDataSource> serde::Serialize for RTDState<DS, [<$ident_name Sport>]> {
+                    // since the caller might have 0 arguments, imports might
+                    // not be used
+                    #[allow(unused)]
+                    fn serialize<S: serde::Serializer>(
+                        &self,
+                        serializer: S
+                    ) -> Result<S::Ok, S::Error> {
+                        use $crate::sports::macros::__internal_sport_builder_serialize_item as sport_builder_serialize_item;
+                        use $crate::sports::macros::__internal_count_tts as count_tts;
+                        use serde::ser::SerializeStruct;
+                        let mut state = serializer.serialize_struct(
+                            stringify!(RTDState<DS, [<$ident_name Sport>]>),
+                            count_tts!($($( $field )*)*)
+                        )?;
+                        use $crate::sports::macros::__internal_paste as paste;
+                        use $crate::rtd_state::RTDStateFieldError;
+                        use serde::ser::Error;
+                        $(
+                            sport_builder_serialize_item!(state, self, $($field)*);
+                        )*
+                        state.end()
+                    }
+                }
             }
         };
+    }
+
+    #[doc(hidden)]
+    #[macro_export]
+    macro_rules! __internal_sport_builder_serialize_item {
+        ($state:ident, $self:ident, $field_accessor:ident, $field_type:ty, $field_id:literal, $field_description:literal, $field_item:literal, $field_length:literal, $field_justify:ident, $comment:literal) => {
+            paste! {
+                $state.serialize_field(stringify!([<$field_accessor:camel>]), &match $self.$field_accessor() {
+                    Ok(x) => Some(x),
+                    Err(RTDStateFieldError::NoData) => None,
+                    Err(e) => return Err(S::Error::custom(e.to_string()))
+                })?;
+            }
+        }
     }
 
     #[doc(hidden)]
@@ -183,9 +237,15 @@ pub mod macros {
     }
 
     #[doc(hidden)]
+    pub use __internal_count_tts;
+    #[doc(hidden)]
+    pub use __internal_replace_expr;
+    #[doc(hidden)]
     pub use __internal_sport_builder_impl;
     #[doc(hidden)]
     pub use __internal_sport_builder_item;
+    #[doc(hidden)]
+    pub use __internal_sport_builder_serialize_item;
     #[doc(hidden)]
     pub use paste::paste as __internal_paste;
     pub(super) use sport_builder;
