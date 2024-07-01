@@ -1,6 +1,6 @@
 pub mod data_source;
 
-use std::{num::ParseIntError, str::Utf8Error};
+use std::{fmt::Display, num::ParseIntError, str::Utf8Error};
 
 use bytes::BytesMut;
 use data_source::RTDStateDataSource;
@@ -284,6 +284,18 @@ pub enum RTDStateFieldError {
     ParseIntError(ParseIntError),
     Utf8Error(Utf8Error),
 }
+
+impl Display for RTDStateFieldError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RTDStateFieldError::NoData => write!(f, "no data can be read"),
+            RTDStateFieldError::ParseIntError(e) => write!(f, "failed to parse int: {}", e),
+            RTDStateFieldError::Utf8Error(e) => write!(f, "failed to parse string: {}", e),
+        }
+    }
+}
+
+impl std::error::Error for RTDStateFieldError {}
 
 #[derive(Debug)]
 pub enum RTDFieldJustification {
