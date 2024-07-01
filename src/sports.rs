@@ -85,13 +85,18 @@ pub mod macros {
                         "use the getters on RTDState:\nrtd_state.main_clock_time() // -> &str"
                         $doc_completion_header
                         ]
-                pub trait [<$ident_name RtdStateExt>] {
-                    $(
-                        sport_builder_item!(type, $($field)*);
-                    )*
+                pub struct [<$ident_name Sport>] { }
+
+                impl $crate::rtd_state::sport::Sport for [<$ident_name Sport>] {
+                    fn name() -> &'static str {
+                        $sport_name
+                    }
+                    fn new() -> Self {
+                        Self {}
+                    }
                 }
 
-                impl<DS: $crate::rtd_state::data_source::RTDStateDataSource> [<$ident_name RtdStateExt>] for RTDState<DS> {
+                impl<DS: $crate::rtd_state::data_source::RTDStateDataSource> RTDState<DS, [<$ident_name Sport>]> {
                     $(
                         sport_builder_item!($($field)*);
                     )*
@@ -103,43 +108,22 @@ pub mod macros {
     #[doc(hidden)]
     #[macro_export]
     macro_rules! __internal_sport_builder_item {
-        (type, $field_accessor:ident, &str, $field_id:literal, $field_description:literal, $field_item:literal, $field_length:literal, $field_justify:ident, $comment:literal) => {
-            #[doc = concat!(
-                                                                "The accessor for the '",
-                                                                $field_description,
-                                                                "' field. This field returns a `",
-                                                                stringify!($field_type),
-                                                                "`.",
-                                                                "\n\n",
-                                                                "Field ID #",
-                                                                $field_id,
-                                                                ". ",
-                                                                $comment
-                                                            )]
-            fn $field_accessor<'a>(
-                &'a self,
-            ) -> Result<&'a str, $crate::rtd_state::RTDStateFieldError>;
-        };
-        (type, $field_accessor:ident, $field_type:ty, $field_id:literal, $field_description:literal, $field_item:literal, $field_length:literal, $field_justify:ident, $comment:literal) => {
-            #[doc = concat!(
-                                                                "The accessor for the '",
-                                                                $field_description,
-                                                                "' field. This field returns a `",
-                                                                stringify!($field_type),
-                                                                "`.",
-                                                                "\n\n",
-                                                                "Field ID #",
-                                                                $field_id,
-                                                                ". ",
-                                                                $comment
-                                                            )]
-            fn $field_accessor(&self)
-                -> Result<$field_type, $crate::rtd_state::RTDStateFieldError>;
-        };
         ($field_accessor:ident, &str, $field_id:literal, $field_description:literal, $field_item:literal, $field_length:literal, $field_justify:ident, $comment:literal) => {
-            fn $field_accessor<'a>(
-                &'a self,
-            ) -> Result<&'a str, $crate::rtd_state::RTDStateFieldError> {
+            #[doc = concat!(
+                                                    "The accessor for the '",
+                                                    $field_description,
+                                                    "' field. This field returns a `",
+                                                    stringify!($field_type),
+                                                    "`.",
+                                                    "\n\n",
+                                                    "Field ID #",
+                                                    $field_id,
+                                                    ". ",
+                                                    $comment
+                                                )]
+            pub fn $field_accessor(
+                &self,
+            ) -> Result<&str, $crate::rtd_state::RTDStateFieldError> {
                 self.field_str(
                     $field_item,
                     $field_length,
@@ -151,7 +135,17 @@ pub mod macros {
             }
         };
         ($field_accessor:ident, i32, $field_id:literal, $field_description:literal, $field_item:literal, $field_length:literal, $field_justify:ident, $comment:literal) => {
-            fn $field_accessor(&self) -> Result<i32, $crate::rtd_state::RTDStateFieldError> {
+            #[doc = concat!(
+                                                    "The accessor for the '",
+                                                    $field_description,
+                                                    "' field. This field returns an `i32`.",
+                                                    "\n\n",
+                                                    "Field ID #",
+                                                    $field_id,
+                                                    ". ",
+                                                    $comment
+                                                )]
+            pub fn $field_accessor(&self) -> Result<i32, $crate::rtd_state::RTDStateFieldError> {
                 self.field_i32(
                     $field_item,
                     $field_length,
@@ -163,7 +157,17 @@ pub mod macros {
             }
         };
         ($field_accessor:ident, bool, $field_id:literal, $field_description:literal, $field_item:literal, $field_length:literal, $field_justify:ident, $comment:literal) => {
-            fn $field_accessor(&self) -> Result<bool, $crate::rtd_state::RTDStateFieldError> {
+            #[doc = concat!(
+                                                    "The accessor for the '",
+                                                    $field_description,
+                                                    "' field. This field returns a `bool`.",
+                                                    "\n\n",
+                                                    "Field ID #",
+                                                    $field_id,
+                                                    ". ",
+                                                    $comment
+                                                )]
+            pub fn $field_accessor(&self) -> Result<bool, $crate::rtd_state::RTDStateFieldError> {
                 self.field_bool($field_item)
             }
         };

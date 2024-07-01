@@ -1,6 +1,9 @@
 use std::env;
 
-use daktronics_allsport_5000::RTDState;
+use daktronics_allsport_5000::{
+    rtd_state::sport::{EmptySport, Sport},
+    RTDState,
+};
 use tokio_serial::SerialPortBuilderExt;
 
 #[cfg(unix)]
@@ -24,7 +27,7 @@ async fn main() -> tokio_serial::Result<()> {
     port.set_exclusive(false)
         .expect("Unable to set serial port exclusive to false");
 
-    let mut rtd_state = RTDState::from_serial_stream(port, true).unwrap();
+    let mut rtd_state = RTDState::from_serial_stream(port, true, EmptySport::new()).unwrap();
 
     let mut update_result = Ok(false);
     while let Ok(_) = update_result {
