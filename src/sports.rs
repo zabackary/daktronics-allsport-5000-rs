@@ -85,18 +85,15 @@ pub mod macros {
             use $crate::sports::macros::__internal_paste as paste;
 
             paste! {
-                #[doc = "An extension trait providing accessors to the various "
+                #[doc = "A struct providing accessors to the various "
                         "fields of " $sport_name ".\n\nEach of these getters "
                         "returns a different type corresponding to the raw "
                         "data type from the hardware. A list of these fields can "
                         "be found in Daktronic's documentation; see the readme "
                         "of this crate for more details.\n\nTo use " $sport_name
-                        "'s accessors, call this trait into scope.\n\n# "
+                        "'s accessors, pass this struct as a type parameter to `RTDState`.\n\n# "
                         "Examples\n\n_These examples are auto-generated, so "
-                        "they may not work well._\n\n```\n// Call the trait "
-                        "itself into scope:\nuse daktronics_allsport_5000::sports::"
-                        $ident_name "RTDStateExt;\n\n// ...\n\n// Now, you can "
-                        "use the getters on RTDState:\nrtd_state.main_clock_time() // -> &str"
+                        "they may not work well._\n\n```\n// TODO: examples\n```\n\n"
                         $doc_completion_header
                         ]
                 pub struct [<$ident_name Sport>] { }
@@ -166,9 +163,7 @@ pub mod macros {
             #[doc = concat!(
                                                     "The accessor for the '",
                                                     $field_description,
-                                                    "' field. This field returns a `",
-                                                    stringify!($field_type),
-                                                    "`.",
+                                                    "' field. This field returns an `&str`.",
                                                     "\n\n",
                                                     "Field ID #",
                                                     $field_id,
