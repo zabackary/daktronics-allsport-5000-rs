@@ -10,11 +10,11 @@ Create a new `RTDState` instance with `RTDState::from_serial_stream`.
 ### Example
 
 ```rust
-# use tokio;
+use tokio;
 use daktronics_allsport_5000::RTDState;
 
-# #[tokio::main]
-# fn main() {
+#[tokio::main]
+fn main() {
 let serial_stream = tokio_serial::new(tty_path, 19200)
     .parity(tokio_serial::Parity::None)
     .open_native_async()?;
@@ -29,8 +29,20 @@ while true {
 
     // do something with `rtd_state`
 }
-# }
+}
 ```
+
+## In other languages...
+
+The same concept as this crate is also implemented in
+[Python by @FlantasticDan](https://github.com/FlantasticDan/scorebox-consoles),
+[C# by @JimThatcher](https://github.com/JimThatcher/sport-streamer), and
+[Python again by @fimion](https://github.com/fimion/pydak). In fact, the data in
+this crate is extracted from a PDF provided by @fimion, so thank you!
+
+If you're interested in porting this crate to another language, check out the
+Excel spreadsheet I compiled with the data that underpins this crate in
+[`./sports_data`](./sports_data/).
 
 ## Low-level access
 

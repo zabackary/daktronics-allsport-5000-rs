@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+
 #[cfg(feature = "tokio")]
 pub mod codecs;
 pub mod packet;
