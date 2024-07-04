@@ -22,7 +22,6 @@ def process_sport(reader: Iterator[list[str]], out: TextIO):
     out.write(f"    {sport_struct_name},\n")
     out.write(f"    \"{sport}\",\n")
     out.write(f"    {'false' if missing else 'true'},\n")
-    out.write("    (\n")
     out.tell()
 
     for row in reader:
@@ -59,16 +58,16 @@ def process_sport(reader: Iterator[list[str]], out: TextIO):
                 row_out += ", deprecate"
             row_out += "),"
             if row_missing:
-                row_out = f"    // {row_out}"
+                row_out = f" // {row_out}"
             else:
-                row_out = f"        {row_out}"
+                row_out = f"    {row_out}"
             out.write(f"{row_out}\n")
         except Continue:
             continue
 
     # write the suffix to the file
-    out.write("    )\n")
-    out.write(");\n")
+    out.seek(out.tell() - 3)  # chop off the last comma
+    out.write("\n);\n")
 
 
 if __name__ == "__main__":
