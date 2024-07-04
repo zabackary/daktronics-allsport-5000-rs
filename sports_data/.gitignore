@@ -1,0 +1,10 @@
+# I don't like installing python packages, so I just copy-pasted the
+# source here on my machine.
+xlsx2csv.py
+
+# An intermediate representation directory
+csv/
+# The output directory
+rs/
+
+__pycache__/
