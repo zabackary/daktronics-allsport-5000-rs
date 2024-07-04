@@ -23,6 +23,7 @@ tokio-util = { version = "^0.7.11", optional = true }
 
 [dev-dependencies]
 futures-util = "^0.3.30"
+serde_json = "^1.0"
 tokio = { version = "^1.38.0", features = ["full"] }
 
 [features]
@@ -31,3 +32,13 @@ tokio-serial = ["tokio", "dep:tokio-serial"]
 tokio = ["async", "dep:tokio", "dep:tokio-util"]
 async = ["dep:futures-util"]
 serde = ["dep:serde"]
+
+[[example]]
+name = "dump_basketball_as_json"
+required-features = ["tokio-serial", "serde"]
+
+[[example]]
+name = "read_data_buffer"
+
+[[example]]
+name = "read_raw_packet"
