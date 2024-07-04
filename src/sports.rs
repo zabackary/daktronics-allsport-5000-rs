@@ -153,12 +153,43 @@ pub mod macros {
                     Err(e) => return Err(S::Error::custom(e.to_string()))
                 })?;
             }
+        };
+        ($state:ident, $self:ident, $field_accessor:ident, $field_type:ty, $field_id:literal, $field_description:literal, $field_item:literal, $field_length:literal, $field_justify:ident, $comment:literal, deprecate) => {
+            {
+                // skipping serialization of field because of deprecation:
+                stringify!($field_accessor)
+            }
         }
     }
 
     #[doc(hidden)]
     #[macro_export]
     macro_rules! __internal_sport_builder_item {
+        ($field_accessor:ident, &str, $field_id:literal, $field_description:literal, $field_item:literal, $field_length:literal, $field_justify:ident, $comment:literal, deprecate) => {
+            #[doc = concat!(
+                                                    "The accessor for the '",
+                                                    $field_description,
+                                                    "' field. This field returns an `&str`.",
+                                                    "\n\n",
+                                                    "Field ID #",
+                                                    $field_id,
+                                                    ". ",
+                                                    $comment
+                                                )]
+            #[deprecated = $comment]
+            pub fn $field_accessor(
+                &self,
+            ) -> Result<&str, $crate::rtd_state::RTDStateFieldError> {
+                self.field_str(
+                    $field_item,
+                    $field_length,
+                    $crate::sports::macros::__internal_sport_builder_item!(
+                        impl justification,
+                        $field_justify
+                    ),
+                )
+            }
+        };
         ($field_accessor:ident, &str, $field_id:literal, $field_description:literal, $field_item:literal, $field_length:literal, $field_justify:ident, $comment:literal) => {
             #[doc = concat!(
                                                     "The accessor for the '",
@@ -174,6 +205,29 @@ pub mod macros {
                 &self,
             ) -> Result<&str, $crate::rtd_state::RTDStateFieldError> {
                 self.field_str(
+                    $field_item,
+                    $field_length,
+                    $crate::sports::macros::__internal_sport_builder_item!(
+                        impl justification,
+                        $field_justify
+                    ),
+                )
+            }
+        };
+        ($field_accessor:ident, i32, $field_id:literal, $field_description:literal, $field_item:literal, $field_length:literal, $field_justify:ident, $comment:literal, deprecate) => {
+            #[doc = concat!(
+                                                    "The accessor for the '",
+                                                    $field_description,
+                                                    "' field. This field returns an `i32`.",
+                                                    "\n\n",
+                                                    "Field ID #",
+                                                    $field_id,
+                                                    ". ",
+                                                    $comment
+                                                )]
+            #[deprecated = $comment]
+            pub fn $field_accessor(&self) -> Result<i32, $crate::rtd_state::RTDStateFieldError> {
+                self.field_i32(
                     $field_item,
                     $field_length,
                     $crate::sports::macros::__internal_sport_builder_item!(
@@ -203,6 +257,22 @@ pub mod macros {
                         $field_justify
                     ),
                 )
+            }
+        };
+        ($field_accessor:ident, bool, $field_id:literal, $field_description:literal, $field_item:literal, $field_length:literal, $field_justify:ident, $comment:literal, deprecate) => {
+            #[doc = concat!(
+                                                    "The accessor for the '",
+                                                    $field_description,
+                                                    "' field. This field returns a `bool`.",
+                                                    "\n\n",
+                                                    "Field ID #",
+                                                    $field_id,
+                                                    ". ",
+                                                    $comment
+                                                )]
+            #[deprecated = $comment]
+            pub fn $field_accessor(&self) -> Result<bool, $crate::rtd_state::RTDStateFieldError> {
+                self.field_bool($field_item)
             }
         };
         ($field_accessor:ident, bool, $field_id:literal, $field_description:literal, $field_item:literal, $field_length:literal, $field_justify:ident, $comment:literal) => {
