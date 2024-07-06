@@ -1,7 +1,9 @@
 use std::env;
 
 use daktronics_allsport_5000::{
-    rtd_state::sport::Sport, sports::basketball::BasketballSport, RTDState,
+    rtd_state::data_source::RTDStateDataSource,
+    sports::{basketball::BasketballSport, Sport},
+    RTDState,
 };
 use tokio_serial::SerialPortBuilderExt;
 
@@ -26,15 +28,15 @@ async fn main() -> tokio_serial::Result<()> {
     port.set_exclusive(false)
         .expect("Unable to set serial port exclusive to false");
 
-    let mut rtd_state = RTDState::from_serial_stream(port, true, BasketballSport::new()).unwrap();
+    let mut sport = BasketballSport::new(RTDState::from_serial_stream(port, true).unwrap());
 
     let mut update_result = Ok(false);
     while let Ok(_) = update_result {
         println!(
             "{}",
-            serde_json::to_string(&rtd_state).expect("couldn't read data")
+            serde_json::to_string(&sport).expect("couldn't read data")
         );
-        update_result = rtd_state.update_async().await;
+        update_result = sport.rtd_state().update_async().await;
     }
     if let Err(e) = update_result {
         eprintln!("{:?}", e);

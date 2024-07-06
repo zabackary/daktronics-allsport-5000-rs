@@ -1,6 +1,6 @@
 use crate::packet::Packet;
 
-pub trait RTDStateDataSource {
+pub trait RTDStateDataSource: Send {
     type Error;
 
     fn read_packet(&mut self) -> Option<Result<Packet, Self::Error>>;

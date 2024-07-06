@@ -13,7 +13,7 @@ pub struct SerialStreamDataSource {
     ignore_unsupported_packets: bool,
 }
 
-impl<S: crate::rtd_state::sport::Sport> RTDState<SerialStreamDataSource, S> {
+impl RTDState<SerialStreamDataSource> {
     /// Create a new [`RTDState`] from a serial stream representing a connection
     /// with the Daktronics All-Sport 5000's serial output. By passing `true` to
     /// `ignore_unsupported_packets`, it will ignore unsupported packets. As the
@@ -42,12 +42,11 @@ impl<S: crate::rtd_state::sport::Sport> RTDState<SerialStreamDataSource, S> {
     pub fn from_serial_stream(
         serial_stream: tokio_serial::SerialStream,
         ignore_unsupported_packets: bool,
-        sport: S,
     ) -> Result<Self, tokio_serial::Error> {
-        Ok(Self::new(
-            SerialStreamDataSource::new(serial_stream, ignore_unsupported_packets)?,
-            sport,
-        ))
+        Ok(Self::new(SerialStreamDataSource::new(
+            serial_stream,
+            ignore_unsupported_packets,
+        )?))
     }
 }
 

@@ -19,6 +19,15 @@ pub mod volleyball;
 pub mod water_polo;
 pub mod wrestling;
 
+/// The trait for all sports to implement.
+pub trait Sport<DS: crate::rtd_state::data_source::RTDStateDataSource> {
+    /// Get the name of the sport.
+    fn name(&self) -> &'static str;
+
+    /// Get the backing RTDState.
+    fn rtd_state(&mut self) -> &mut crate::rtd_state::RTDState<DS>;
+}
+
 #[doc(hidden)]
 pub mod macros {
     /// Builds a sport
@@ -78,7 +87,7 @@ pub mod macros {
         $doc_completion_header:literal,
         $( ($($field:tt)*) ),*
     ) => {
-            use $crate::RTDState;
+            use $crate::rtd_state::{self, RTDState};
             // since the caller might have 0 arguments, this might not get used
             #[allow(unused)]
             use $crate::sports::macros::__internal_sport_builder_item as sport_builder_item;
@@ -96,25 +105,34 @@ pub mod macros {
                         "they may not work well._\n\n```\n// TODO: examples\n```\n\n"
                         $doc_completion_header
                         ]
-                pub struct [<$ident_name Sport>] { }
+                pub struct [<$ident_name Sport>]<DS: rtd_state::data_source::RTDStateDataSource> {
+                    rtd_state: RTDState<DS>
+                }
 
-                impl $crate::rtd_state::sport::Sport for [<$ident_name Sport>] {
-                    fn name() -> &'static str {
+                impl<DS: rtd_state::data_source::RTDStateDataSource> $crate::sports::Sport<DS> for [<$ident_name Sport>]<DS> {
+                    fn name(&self) -> &'static str {
                         $sport_name
                     }
-                    fn new() -> Self {
-                        Self {}
+
+                    fn rtd_state(&mut self) -> &mut RTDState<DS> {
+                        &mut self.rtd_state
                     }
                 }
 
-                impl<DS: $crate::rtd_state::data_source::RTDStateDataSource> RTDState<DS, [<$ident_name Sport>]> {
+                impl<DS: rtd_state::data_source::RTDStateDataSource> [<$ident_name Sport>]<DS> {
+                    pub fn new(rtd_state: RTDState<DS>) -> Self {
+                        Self {
+                            rtd_state
+                        }
+                    }
+
                     $(
                         sport_builder_item!($($field)*);
                     )*
                 }
 
                 #[cfg(feature = "serde")]
-                impl<DS: $crate::rtd_state::data_source::RTDStateDataSource> serde::Serialize for RTDState<DS, [<$ident_name Sport>]> {
+                impl<DS: rtd_state::data_source::RTDStateDataSource> serde::Serialize for [<$ident_name Sport>]<DS> {
                     // since the caller might have 0 arguments, imports might
                     // not be used
                     #[allow(unused)]
@@ -127,6 +145,9 @@ pub mod macros {
                         use serde::ser::SerializeStruct;
                         let mut state = serializer.serialize_struct(
                             stringify!(RTDState<DS, [<$ident_name Sport>]>),
+                            // TODO: currently, serializing deprecated fields
+                            // is disabled. However, this does not account for
+                            // that
                             count_tts!($($( $field )*)*)
                         )?;
                         use $crate::sports::macros::__internal_paste as paste;
@@ -180,7 +201,7 @@ pub mod macros {
             pub fn $field_accessor(
                 &self,
             ) -> Result<&str, $crate::rtd_state::RTDStateFieldError> {
-                self.field_str(
+                self.rtd_state.field_str(
                     $field_item,
                     $field_length,
                     $crate::sports::macros::__internal_sport_builder_item!(
@@ -204,7 +225,7 @@ pub mod macros {
             pub fn $field_accessor(
                 &self,
             ) -> Result<&str, $crate::rtd_state::RTDStateFieldError> {
-                self.field_str(
+                self.rtd_state.field_str(
                     $field_item,
                     $field_length,
                     $crate::sports::macros::__internal_sport_builder_item!(
@@ -227,7 +248,7 @@ pub mod macros {
                                                 )]
             #[deprecated = $comment]
             pub fn $field_accessor(&self) -> Result<i32, $crate::rtd_state::RTDStateFieldError> {
-                self.field_i32(
+                self.rtd_state.field_i32(
                     $field_item,
                     $field_length,
                     $crate::sports::macros::__internal_sport_builder_item!(
@@ -249,7 +270,7 @@ pub mod macros {
                                                     $comment
                                                 )]
             pub fn $field_accessor(&self) -> Result<i32, $crate::rtd_state::RTDStateFieldError> {
-                self.field_i32(
+                self.rtd_state.field_i32(
                     $field_item,
                     $field_length,
                     $crate::sports::macros::__internal_sport_builder_item!(
@@ -272,7 +293,7 @@ pub mod macros {
                                                 )]
             #[deprecated = $comment]
             pub fn $field_accessor(&self) -> Result<bool, $crate::rtd_state::RTDStateFieldError> {
-                self.field_bool($field_item)
+                self.rtd_state.field_bool($field_item)
             }
         };
         ($field_accessor:ident, bool, $field_id:literal, $field_description:literal, $field_item:literal, $field_length:literal, $field_justify:ident, $comment:literal) => {
@@ -287,7 +308,7 @@ pub mod macros {
                                                     $comment
                                                 )]
             pub fn $field_accessor(&self) -> Result<bool, $crate::rtd_state::RTDStateFieldError> {
-                self.field_bool($field_item)
+                self.rtd_state.field_bool($field_item)
             }
         };
         (impl justification, N) => {
