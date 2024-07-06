@@ -8,7 +8,7 @@ homepage = "https://github.com/zabackary/daktronics-allsport-5000-rs"
 repository = "https://github.com/zabackary/daktronics-allsport-5000-rs"
 documentation = "http://docs.rs/daktronics-allsport-5000"
 readme = "README.md"
-keywords = ["daktronics", "daktronics-allsport-5000"]
+keywords = ["daktronics", "allsport-5000"]
 categories = ["asynchronous", "hardware-support"]
 edition = "2021"
 
