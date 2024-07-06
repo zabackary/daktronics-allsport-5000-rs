@@ -1,3 +1,5 @@
+//! The volleyball sport accessors, including a simple version
+//!
 //! This sport was generated semi-automatically and may contain errors.
 super::sport_builder!(
     Volleyball,
@@ -2325,6 +2327,421 @@ super::sport_builder!(
         "Guest Total Hustle",
         592,
         4,
+        R,
+        ""
+    )
+);
+
+super::sport_builder!(
+    SimpleVolleyball,
+    "Simple Volleyball",
+    true,
+    (
+        main_clock_time,
+        &str,
+        1,
+        "Main Clock Time (mm:ss/ss.t)",
+        1,
+        5,
+        L,
+        ""
+    ),
+    (
+        main_clock_time_2,
+        &str,
+        2,
+        "Main Clock Time (mm:ss.t)",
+        6,
+        8,
+        L,
+        ""
+    ),
+    (
+        main_clock_time_out_tod,
+        &str,
+        3,
+        "Main Clock/Time Out/TOD (mm:ss/ss.t)",
+        14,
+        5,
+        L,
+        ""
+    ),
+    (
+        main_time_out_tod_2,
+        &str,
+        4,
+        "Main Clock/Time Out/TOD (mm:ss.t)",
+        19,
+        8,
+        L,
+        ""
+    ),
+    (
+        main_clock_is_zero,
+        bool,
+        5,
+        "Main Clock =0 (' ' or 'z')",
+        27,
+        1,
+        L,
+        ""
+    ),
+    (
+        main_clock_stopped,
+        bool,
+        6,
+        "Main Clock Stopped (' ' or 's')",
+        28,
+        1,
+        L,
+        ""
+    ),
+    (
+        main_clock_time_out_horn,
+        bool,
+        7,
+        "Main Clock/Time Out Horn (' ' or 'h')",
+        29,
+        1,
+        L,
+        ""
+    ),
+    (
+        main_clock_horn,
+        bool,
+        8,
+        "Main Clock Horn (' ' or 'h')",
+        30,
+        1,
+        L,
+        ""
+    ),
+    (
+        time_out_horn,
+        bool,
+        9,
+        "Time Out Horn (' ' or 'h')",
+        31,
+        1,
+        L,
+        ""
+    ),
+    (
+        time_out_time,
+        &str,
+        10,
+        "Time Out Time (mm:ss)",
+        32,
+        8,
+        L,
+        ""
+    ),
+    (
+        time_of_day,
+        &str,
+        11,
+        "Time of Day (hh:mm:ss)",
+        40,
+        8,
+        L,
+        ""
+    ),
+    (home_team_name, &str, 12, "Home Team Name", 48, 20, L, ""),
+    (guest_team_name, &str, 13, "Guest Team Name", 68, 20, L, ""),
+    (home_team_score, &str, 16, "Home Team Score", 108, 4, R, ""),
+    (
+        guest_team_score,
+        &str,
+        17,
+        "Guest Team Score",
+        112,
+        4,
+        R,
+        ""
+    ),
+    (
+        home_time_outs_left_total,
+        i32,
+        21,
+        "Home Time Outs Left - Total",
+        122,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_time_outs_left_total,
+        i32,
+        25,
+        "Guest Time Outs Left - Total",
+        130,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_time_out_indicator,
+        bool,
+        26,
+        "Home Time Out Indicator (' ' or '<')",
+        132,
+        1,
+        L,
+        ""
+    ),
+    (
+        guest_time_out_indicator,
+        bool,
+        28,
+        "Guest Time Out Indicator (' ' or '>')",
+        137,
+        1,
+        L,
+        ""
+    ),
+    (game, i32, 30, "Game", 142, 2, R, ""),
+    (
+        game_text,
+        &str,
+        31,
+        "Game Text ('1st ', 'OT ', 'OT/2')",
+        144,
+        4,
+        L,
+        "Future",
+        deprecate
+    ),
+    (
+        game_description,
+        &str,
+        32,
+        "Game Description ('End of 1st')",
+        148,
+        12,
+        L,
+        "Future",
+        deprecate
+    ),
+    (
+        home_serve_indicator,
+        bool,
+        40,
+        "Home Serve Indicator (' ' or '<')",
+        201,
+        1,
+        L,
+        ""
+    ),
+    (
+        guest_serve_indicator,
+        bool,
+        43,
+        "Guest Serve Indicator (' ' or '>')",
+        208,
+        1,
+        L,
+        ""
+    ),
+    (home_games_won, i32, 46, "Home Games Won", 215, 2, R, ""),
+    (guest_games_won, i32, 47, "Guest Games Won", 217, 2, R, ""),
+    (match_number, i32, 48, "Match Number", 219, 3, R, ""),
+    (
+        home_score_game_1,
+        i32,
+        49,
+        "Home Score - Game 1",
+        222,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_game_2,
+        i32,
+        50,
+        "Home Score - Game 2",
+        224,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_game_3,
+        i32,
+        51,
+        "Home Score - Game 3",
+        226,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_game_4,
+        i32,
+        52,
+        "Home Score - Game 4",
+        228,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_game_5,
+        i32,
+        53,
+        "Home Score - Game 5",
+        230,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_game_6,
+        i32,
+        54,
+        "Home Score - Game 6",
+        232,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_game_7,
+        i32,
+        55,
+        "Home Score - Game 7",
+        234,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_game_8,
+        i32,
+        56,
+        "Home Score - Game 8",
+        236,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_game_9,
+        i32,
+        57,
+        "Home Score - Game 9",
+        238,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_current_game,
+        i32,
+        58,
+        "Home Score - Current Game",
+        240,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_game_1,
+        i32,
+        59,
+        "Guest Score - Game 1",
+        242,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_game_2,
+        i32,
+        60,
+        "Guest Score - Game 2",
+        244,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_game_3,
+        i32,
+        61,
+        "Guest Score - Game 3",
+        246,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_game_4,
+        i32,
+        62,
+        "Guest Score - Game 4",
+        248,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_game_5,
+        i32,
+        63,
+        "Guest Score - Game 5",
+        250,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_game_6,
+        i32,
+        64,
+        "Guest Score - Game 6",
+        252,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_game_7,
+        i32,
+        65,
+        "Guest Score - Game 7",
+        254,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_game_8,
+        i32,
+        66,
+        "Guest Score - Game 8",
+        256,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_game_9,
+        i32,
+        67,
+        "Guest Score - Game 9",
+        258,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_current_game,
+        i32,
+        68,
+        "Guest Score - Current Game",
+        260,
+        2,
         R,
         ""
     )

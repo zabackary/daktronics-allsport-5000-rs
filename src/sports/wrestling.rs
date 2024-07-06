@@ -1,3 +1,5 @@
+//! The wrestling struct with accessors, along with a simple version
+//!
 //! This sport was generated semi-automatically and may contain errors.
 super::sport_builder!(
     Wrestling,
@@ -889,4 +891,298 @@ super::sport_builder!(
         R,
         ""
     )
+);
+
+super::sport_builder!(
+    SimpleWrestling,
+    "Simple Wrestling",
+    true,
+    (
+        main_clock_time,
+        &str,
+        1,
+        "Main Clock Time (mm:ss/ss.t)",
+        1,
+        5,
+        L,
+        ""
+    ),
+    (
+        main_clock_time_2,
+        &str,
+        2,
+        "Main Clock Time (mm:ss.t)",
+        6,
+        8,
+        L,
+        ""
+    ),
+    (
+        main_blood_injury_tod,
+        &str,
+        3,
+        "Main/Blood/Injury/TOD (mm:ss/ss.t)",
+        14,
+        5,
+        L,
+        ""
+    ),
+    (
+        main_clock_time_out_tod_2,
+        &str,
+        4,
+        "Main/Blood/Injury/TOD (mm:ss.t)",
+        19,
+        8,
+        L,
+        ""
+    ),
+    (
+        main_clock_is_zero,
+        bool,
+        5,
+        "Main Clock =0 (' ' or 'z')",
+        27,
+        1,
+        L,
+        ""
+    ),
+    (
+        main_clock_stopped,
+        bool,
+        6,
+        "Main Clock Stopped (' ' or 's')",
+        28,
+        1,
+        L,
+        ""
+    ),
+    (
+        main_clock_time_out_horn,
+        bool,
+        7,
+        "Main Clock/Time Out Horn (' ' or 'h')",
+        29,
+        1,
+        L,
+        ""
+    ),
+    (
+        main_clock_horn,
+        bool,
+        8,
+        "Main Clock Horn (' ' or 'h')",
+        30,
+        1,
+        L,
+        ""
+    ),
+    (
+        time_out_horn,
+        bool,
+        9,
+        "Time Out Horn (' ' or 'h')",
+        31,
+        1,
+        L,
+        ""
+    ),
+    (
+        time_out_time,
+        &str,
+        10,
+        "Time Out Time (mm:ss)",
+        32,
+        8,
+        L,
+        ""
+    ),
+    (
+        time_of_day,
+        &str,
+        11,
+        "Time of Day (hh:mm:ss)",
+        40,
+        8,
+        L,
+        ""
+    ),
+    (home_team_name, &str, 12, "Home Team Name", 48, 20, L, ""),
+    (guest_team_name, &str, 13, "Guest Team Name", 68, 20, L, ""),
+    (home_team_score, &str, 16, "Home Team Score", 108, 4, R, ""),
+    (
+        guest_team_score,
+        &str,
+        17,
+        "Guest Team Score",
+        112,
+        4,
+        R,
+        ""
+    ),
+    (
+        home_time_outs_left_total,
+        i32,
+        21,
+        "Home Time Outs Left - Total",
+        122,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_time_outs_left_total,
+        i32,
+        25,
+        "Guest Time Outs Left - Total",
+        130,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_time_out_indicator,
+        bool,
+        26,
+        "Home Time Out Indicator (' ' or '<')",
+        132,
+        1,
+        L,
+        ""
+    ),
+    (
+        guest_time_out_indicator,
+        bool,
+        28,
+        "Guest Time Out Indicator (' ' or '>')",
+        137,
+        1,
+        L,
+        ""
+    ),
+    (period, i32, 30, "Period", 142, 2, R, ""),
+    (
+        period_text,
+        &str,
+        31,
+        "Period Text ('1st ', 'OT', 'OT/2')",
+        144,
+        4,
+        L,
+        "Future",
+        deprecate
+    ),
+    (
+        period_description,
+        &str,
+        32,
+        "Period Description ('End of 1st')",
+        148,
+        12,
+        L,
+        "Future",
+        deprecate
+    ),
+    (
+        advantage_time,
+        &str,
+        40,
+        "Advantage Time (mm:ss)",
+        201,
+        8,
+        L,
+        ""
+    ),
+    (
+        home_advantage_time,
+        &str,
+        41,
+        "Home Advantage Time (mm:ss)",
+        209,
+        8,
+        L,
+        ""
+    ),
+    (
+        guest_advantage_time,
+        &str,
+        42,
+        "Guest Advantage Time (mm:ss)",
+        217,
+        8,
+        L,
+        ""
+    ),
+    (
+        home_blood_time,
+        &str,
+        43,
+        "Home Blood Time (mm:ss)",
+        225,
+        8,
+        L,
+        ""
+    ),
+    (
+        home_injury_time,
+        &str,
+        44,
+        "Home Injury Time (mm:ss)",
+        233,
+        8,
+        L,
+        ""
+    ),
+    (
+        guest_blood_time,
+        &str,
+        45,
+        "Guest Blood Time (mm:ss)",
+        241,
+        8,
+        L,
+        ""
+    ),
+    (
+        guest_injury_time,
+        &str,
+        46,
+        "Guest Injury Time (mm:ss)",
+        249,
+        8,
+        L,
+        ""
+    ),
+    (
+        home_advantage_indicator,
+        bool,
+        47,
+        "Home Advantage Indicator (' ' or '<')",
+        257,
+        1,
+        L,
+        ""
+    ),
+    (
+        guest_advantage_indicator,
+        bool,
+        50,
+        "Guest Advantage Indicator (' ' or '>')",
+        268,
+        1,
+        L,
+        ""
+    ),
+    (home_match_score, i32, 53, "Home Match Score", 279, 2, R, ""),
+    (
+        guest_match_score,
+        i32,
+        54,
+        "Guest Match Score",
+        281,
+        2,
+        R,
+        ""
+    ),
+    (match_number, i32, 55, "Match Number", 283, 3, R, "")
 );

@@ -1,3 +1,5 @@
+//! The sport struct for basketball
+//!
 //! This sport was generated semi-automatically and may contain errors.
 super::sport_builder!(
     Basketball,
@@ -2320,5 +2322,380 @@ super::sport_builder!(
         4,
         R,
         "From DSTI Application Only"
+    )
+);
+
+super::sport_builder!(
+    SimpleBasketball,
+    "Simple Basketball",
+    true,
+    (
+        main_clock_time,
+        &str,
+        1,
+        "Main Clock Time (mm:ss/ss.t)",
+        1,
+        5,
+        L,
+        ""
+    ),
+    (
+        main_clock_time_2,
+        &str,
+        2,
+        "Main Clock Time (mm:ss.t)",
+        6,
+        8,
+        L,
+        ""
+    ),
+    (
+        main_clock_time_out_tod,
+        &str,
+        3,
+        "Main Clock/Time Out/TOD (mm:ss/ss.t)",
+        14,
+        5,
+        L,
+        ""
+    ),
+    (
+        main_clock_time_out_tod_2,
+        &str,
+        4,
+        "Main Clock/Time Out/TOD (mm:ss.t)",
+        19,
+        8,
+        L,
+        ""
+    ),
+    (
+        main_clock_is_zero,
+        bool,
+        5,
+        "Main Clock =0 (' ' or 'z')",
+        27,
+        1,
+        L,
+        ""
+    ),
+    (
+        main_clock_stopped,
+        bool,
+        6,
+        "Main Clock Stopped (' ' or 's')",
+        28,
+        1,
+        L,
+        ""
+    ),
+    (
+        main_clock_time_out_horn,
+        bool,
+        7,
+        "Main Clock/Time Out Horn (' ' or 'h')",
+        29,
+        1,
+        L,
+        ""
+    ),
+    (
+        main_clock_horn,
+        bool,
+        8,
+        "Main Clock Horn (' ' or 'h')",
+        30,
+        1,
+        L,
+        ""
+    ),
+    (
+        time_out_horn,
+        bool,
+        9,
+        "Time Out Horn (' ' or 'h')",
+        31,
+        1,
+        L,
+        ""
+    ),
+    (
+        time_out_time,
+        &str,
+        10,
+        "Time Out Time (mm:ss)",
+        32,
+        8,
+        L,
+        ""
+    ),
+    (
+        time_of_day,
+        &str,
+        11,
+        "Time of Day (hh:mm:ss)",
+        40,
+        8,
+        L,
+        ""
+    ),
+    (home_team_name, &str, 12, "Home Team Name", 48, 20, L, ""),
+    (guest_team_name, &str, 13, "Guest Team Name", 68, 20, L, ""),
+    (home_team_score, i32, 16, "Home Team Score", 108, 4, R, ""),
+    (guest_team_score, i32, 17, "Guest Team Score", 112, 4, R, ""),
+    (
+        home_time_outs_left_total,
+        i32,
+        21,
+        "Home Time Outs Left - Total",
+        122,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_time_outs_left_total,
+        i32,
+        25,
+        "Guest Time Outs Left - Total",
+        130,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_time_out_indicator,
+        bool,
+        26,
+        "Home Time Out Indicator (' ' or '<')",
+        132,
+        1,
+        L,
+        ""
+    ),
+    (
+        guest_time_out_indicator,
+        bool,
+        28,
+        "Guest Time Out Indicator (' ' or '>')",
+        137,
+        1,
+        L,
+        ""
+    ),
+    (period, i32, 30, "Period", 142, 2, R, ""),
+    (
+        period_text,
+        &str,
+        31,
+        "Period Text ('1st ', 'OT ', 'OT/2')",
+        144,
+        4,
+        L,
+        "Future",
+        deprecate
+    ),
+    (
+        period_description,
+        &str,
+        32,
+        "Period Description ('End of 1st')",
+        148,
+        12,
+        L,
+        "Future",
+        deprecate
+    ),
+    (home_team_fouls, i32, 54, "Home Team Fouls", 236, 2, R, ""),
+    (guest_team_fouls, i32, 55, "Guest Team Fouls", 238, 2, R, ""),
+    (
+        home_score_period_1,
+        i32,
+        60,
+        "Home Score - Period 1",
+        264,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_period_2,
+        i32,
+        61,
+        "Home Score - Period 2",
+        266,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_period_3,
+        i32,
+        62,
+        "Home Score - Period 3",
+        268,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_period_4,
+        i32,
+        63,
+        "Home Score - Period 4",
+        270,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_period_5,
+        i32,
+        64,
+        "Home Score - Period 5",
+        272,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_period_7,
+        i32,
+        66,
+        "Home Score - Period 7",
+        276,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_period_8,
+        i32,
+        67,
+        "Home Score - Period 8",
+        278,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_period_9,
+        i32,
+        68,
+        "Home Score - Period 9",
+        280,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_score_current_period,
+        i32,
+        69,
+        "Home Score - Current Period",
+        282,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_period_1,
+        i32,
+        70,
+        "Guest Score - Period 1",
+        284,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_period_2,
+        i32,
+        71,
+        "Guest Score - Period 2",
+        286,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_period_3,
+        i32,
+        72,
+        "Guest Score - Period 3",
+        288,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_period_4,
+        i32,
+        73,
+        "Guest Score - Period 4",
+        290,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_period_5,
+        i32,
+        74,
+        "Guest Score - Period 5",
+        292,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_period_6,
+        i32,
+        75,
+        "Guest Score - Period 6",
+        294,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_period_7,
+        i32,
+        76,
+        "Guest Score - Period 7",
+        296,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_period_8,
+        i32,
+        77,
+        "Guest Score - Period 8",
+        298,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_period_9,
+        i32,
+        78,
+        "Guest Score - Period 9",
+        300,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_score_current_period,
+        i32,
+        79,
+        "Guest Score - Current Period",
+        302,
+        2,
+        R,
+        ""
     )
 );

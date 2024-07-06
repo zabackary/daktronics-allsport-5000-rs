@@ -1,3 +1,5 @@
+//! The hockey/lacrosse accessors + a simple version
+//!
 //! This sport was generated semi-automatically and may contain errors.
 super::sport_builder!(
     HockeyLacrosse,
@@ -1375,5 +1377,197 @@ super::sport_builder!(
         3,
         R,
         ""
+    )
+);
+
+super::sport_builder!(
+    SimpleHockeyLacrosse,
+    "Simple Hockey/Lacrosse",
+    true,
+    (
+        main_clock_time,
+        &str,
+        1,
+        "Main Clock Time (mm:ss/ss.t )",
+        1,
+        5,
+        L,
+        ""
+    ),
+    (
+        main_clock_time_2,
+        &str,
+        2,
+        "Main Clock Time (mm:ss.t )",
+        6,
+        8,
+        L,
+        ""
+    ),
+    (
+        main_clock_time_out_tod,
+        &str,
+        3,
+        "Main Clock/Time Out/TOD (mm:ss/ss.t )",
+        14,
+        5,
+        L,
+        ""
+    ),
+    (
+        main_time_out_tod_2,
+        &str,
+        4,
+        "Main Clock/Time Out/TOD (mm:ss.t )",
+        19,
+        8,
+        L,
+        ""
+    ),
+    (
+        main_clock_is_zero,
+        bool,
+        5,
+        "Main Clock =0 (' ' or 'z')",
+        27,
+        1,
+        L,
+        ""
+    ),
+    (
+        main_clock_stopped,
+        bool,
+        6,
+        "Main Clock Stopped (' ' or 's')",
+        28,
+        1,
+        L,
+        ""
+    ),
+    (
+        main_clock_time_out_horn,
+        bool,
+        7,
+        "Main Clock/Time Out Horn (' ' or 'h')",
+        29,
+        1,
+        L,
+        ""
+    ),
+    (
+        main_clock_horn,
+        bool,
+        8,
+        "Main Clock Horn (' ' or 'h')",
+        30,
+        1,
+        L,
+        ""
+    ),
+    (
+        time_out_horn,
+        bool,
+        9,
+        "Time Out Horn (' ' or 'h')",
+        31,
+        1,
+        L,
+        ""
+    ),
+    (
+        time_out_time,
+        &str,
+        10,
+        "Time Out Time (mm:ss)",
+        32,
+        8,
+        L,
+        ""
+    ),
+    (
+        time_of_day,
+        &str,
+        11,
+        "Time of Day (hh:mm:ss)",
+        40,
+        8,
+        L,
+        ""
+    ),
+    (home_team_name, &str, 12, "Home Team Name", 48, 20, L, ""),
+    (guest_team_name, &str, 13, "Guest Team Name", 68, 20, L, ""),
+    (home_team_score, &str, 16, "Home Team Score", 108, 4, R, ""),
+    (
+        guest_team_score,
+        &str,
+        17,
+        "Guest Team Score",
+        112,
+        4,
+        R,
+        ""
+    ),
+    (
+        home_time_outs_left_total,
+        i32,
+        21,
+        "Home Time Outs Left - Total",
+        122,
+        2,
+        R,
+        ""
+    ),
+    (
+        guest_time_outs_left_total,
+        i32,
+        25,
+        "Guest Time Outs Left - Total",
+        130,
+        2,
+        R,
+        ""
+    ),
+    (
+        home_time_out_indicator,
+        bool,
+        26,
+        "Home Time Out Indicator (' ' or '<')",
+        132,
+        1,
+        L,
+        ""
+    ),
+    (
+        guest_time_out_indicator,
+        bool,
+        28,
+        "Guest Time Out Indicator (' ' or '>')",
+        137,
+        1,
+        L,
+        ""
+    ),
+    (period, i32, 30, "Period", 142, 2, R, ""),
+    (
+        period_text,
+        &str,
+        31,
+        "Period Text ('1st ', 'OT', 'OT/2')",
+        144,
+        4,
+        L,
+        "Future",
+        deprecate
+    ),
+    (
+        period_description,
+        &str,
+        32,
+        "Period Description ('End of 1st ')",
+        148,
+        12,
+        L,
+        "Future",
+        deprecate
     )
 );
