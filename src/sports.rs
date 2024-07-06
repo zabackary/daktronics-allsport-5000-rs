@@ -39,6 +39,7 @@ pub mod macros {
     ///   documentation.
     /// * Each `field` should follow the format:  
     ///   `(getter_name, field_type, field, "Description", item, length, L/R, "Comment")`
+    #[macro_export]
     macro_rules! sport_builder {
         (
             $ident_name:ident,
@@ -328,7 +329,7 @@ pub mod macros {
     pub use __internal_sport_builder_serialize_item;
     #[doc(hidden)]
     pub use paste::paste as __internal_paste;
-    pub(super) use sport_builder;
+    pub use sport_builder;
 }
 
-use macros::sport_builder;
+pub use macros::sport_builder;
