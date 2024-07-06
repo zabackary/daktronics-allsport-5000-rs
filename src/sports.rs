@@ -87,13 +87,7 @@ pub mod macros {
         $doc_completion_header:literal,
         $( ($($field:tt)*) ),*
     ) => {
-            use $crate::rtd_state::{self, RTDState};
-            // since the caller might have 0 arguments, this might not get used
-            #[allow(unused)]
-            use $crate::sports::macros::__internal_sport_builder_item as sport_builder_item;
-            use $crate::sports::macros::__internal_paste as paste;
-
-            paste! {
+            $crate::sports::macros::__internal_paste! {
                 #[doc = "A struct providing accessors to the various "
                         "fields of " $sport_name ".\n\nEach of these getters "
                         "returns a different type corresponding to the raw "
@@ -105,29 +99,29 @@ pub mod macros {
                         "they may not work well._\n\n```\n// TODO: examples\n```\n\n"
                         $doc_completion_header
                         ]
-                pub struct [<$ident_name Sport>]<DS: rtd_state::data_source::RTDStateDataSource> {
-                    rtd_state: RTDState<DS>
+                pub struct [<$ident_name Sport>]<DS: $crate::rtd_state::data_source::RTDStateDataSource> {
+                    rtd_state: $crate::rtd_state::RTDState<DS>
                 }
 
-                impl<DS: rtd_state::data_source::RTDStateDataSource> $crate::sports::Sport<DS> for [<$ident_name Sport>]<DS> {
+                impl<DS: $crate::rtd_state::data_source::RTDStateDataSource> $crate::sports::Sport<DS> for [<$ident_name Sport>]<DS> {
                     fn name(&self) -> &'static str {
                         $sport_name
                     }
 
-                    fn rtd_state(&mut self) -> &mut RTDState<DS> {
+                    fn rtd_state(&mut self) -> &mut $crate::RTDState<DS> {
                         &mut self.rtd_state
                     }
                 }
 
-                impl<DS: rtd_state::data_source::RTDStateDataSource> [<$ident_name Sport>]<DS> {
-                    pub fn new(rtd_state: RTDState<DS>) -> Self {
+                impl<DS: $crate::rtd_state::data_source::RTDStateDataSource> [<$ident_name Sport>]<DS> {
+                    pub fn new(rtd_state: $crate::RTDState<DS>) -> Self {
                         Self {
                             rtd_state
                         }
                     }
 
                     $(
-                        sport_builder_item!($($field)*);
+                        $crate::sports::macros::__internal_sport_builder_item!($($field)*);
                     )*
                 }
 
