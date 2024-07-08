@@ -1,3 +1,5 @@
+//! The struct for viewing Track data streams
+//!
 //! This sport was generated semi-automatically and may contain errors.
 super::sport_builder!(
     Track,

@@ -1,3 +1,5 @@
+//! The struct for viewing Pitch/Speed data streams
+//!
 //! This sport was generated semi-automatically and may contain errors.
 super::sport_builder!(
     PitchAndSpeed,

@@ -1,3 +1,5 @@
+//! Contains a `tokio_util` codec to parse packets sent from the serial line.
+
 use super::packet::{Packet, PacketParseError};
 use bytes::{Buf, Bytes, BytesMut};
 
@@ -5,12 +7,35 @@ use std::{fmt, io};
 
 use tokio_util::codec::Decoder;
 
+/// The codec, implementing [`Decoder`]
+///
+/// The codec returns a stream of [`Packet`]s containing an offset and data
+/// contents. For more information, see the `packet` module docs.
+///
+/// # Examples
+///
+/// ```no_run
+/// use daktronics_allsport_5000::codecs;
+/// use tokio_serial::SerialPortBuilderExt; // for open_native_async
+/// use tokio_util::codec::Decoder; // for framed
+/// use futures_util::StreamExt; // for next
+///
+/// let serial_stream = tokio_serial::new("/dev/ttyUSB0", 19200)
+///     .parity(tokio_serial::Parity::None)
+///     .open_native_async()
+///     .unwrap();
+/// let mut reader = codecs::SerialRTDCodec::default().framed(serial_stream);
+/// reader.next(); // returns a future
+/// ```
 #[derive(Debug)]
 pub struct SerialRTDCodec {
     state: SerialRTDCodecState,
 }
 
 impl SerialRTDCodec {
+    /// Create a new instance
+    ///
+    /// This assumes that the transmission stream is in an idle state.
     fn new() -> Self {
         Self {
             state: SerialRTDCodecState::ReadingSyncIdle,
@@ -19,6 +44,7 @@ impl SerialRTDCodec {
 }
 
 impl Default for SerialRTDCodec {
+    /// Create a new instance.
     fn default() -> Self {
         Self::new()
     }
@@ -26,7 +52,10 @@ impl Default for SerialRTDCodec {
 
 #[derive(Debug)]
 enum SerialRTDCodecState {
+    /// The SYNC IDLE transmission is ongoing
     ReadingSyncIdle,
+    /// Data is being read; last checked index for the end byte is stored in
+    /// `next_index`
     ReadingData { next_index: usize },
 }
 
@@ -80,6 +109,7 @@ impl Decoder for SerialRTDCodec {
     }
 }
 
+/// An error occurring while fetching the next packet
 #[derive(Debug)]
 pub enum SerialRTDCodecError {
     /// Couldn't parse a packet.
@@ -91,8 +121,8 @@ pub enum SerialRTDCodecError {
 impl fmt::Display for SerialRTDCodecError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            SerialRTDCodecError::Io(e) => write!(f, "{}", e),
-            SerialRTDCodecError::PacketParseError(e) => write!(f, "{}", e),
+            SerialRTDCodecError::Io(e) => write!(f, "io error while reading serial: {}", e),
+            SerialRTDCodecError::PacketParseError(e) => write!(f, "packet parse error: {}", e),
         }
     }
 }

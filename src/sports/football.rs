@@ -1,3 +1,8 @@
+//! The struct for viewing Football data streams
+//!
+//! If you have time and a need, feel free to submit a PR for a simple version
+//! of this common sport.
+//!
 //! This sport was generated semi-automatically and may contain errors.
 super::sport_builder!(
     Football,

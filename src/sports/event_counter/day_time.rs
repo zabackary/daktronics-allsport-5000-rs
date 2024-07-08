@@ -1,3 +1,5 @@
+//! The struct for viewing simple Date/Time data streams
+
 super::super::sport_builder!(
     DateTimeEventCounter,
     "Date and Time Event Countdown",

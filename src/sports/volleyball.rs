@@ -1,4 +1,8 @@
-//! The volleyball sport accessors, including a simple version
+//! The struct for viewing Volleyball data streams (includes a simple version)
+//!
+//! The simple version of the struct includes only commonly used fields like the
+//! score, team names, clock, etc., but omits extraneous fields casual sports
+//! events are unlikely to fill, like player names, advertisements, etc.
 //!
 //! This sport was generated semi-automatically and may contain errors.
 super::sport_builder!(

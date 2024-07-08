@@ -1,4 +1,8 @@
-//! The struct for soccer's accessors (include a simple version)
+//! The struct for viewing Soccer data streams (includes a simple version)
+//!
+//! The simple version of the struct includes only commonly used fields like the
+//! score, team names, clock, etc., but omits extraneous fields casual sports
+//! events are unlikely to fill, like player names, advertisements, etc.
 //!
 //! This sport was generated semi-automatically and may contain errors.
 super::sport_builder!(
@@ -1173,10 +1177,10 @@ super::sport_builder!(
         deprecate
     ),
     (
-        home_fouls_2ndhalf,
+        home_fouls_2nd_half,
         i32,
         115,
-        "Home Fouls - 2ndHalf",
+        "Home Fouls - 2nd Half",
         363,
         2,
         R,
@@ -1281,10 +1285,10 @@ super::sport_builder!(
         deprecate
     ),
     (
-        home_penalty_tol_2ndhalf,
+        home_penalty_tol_2nd_half,
         i32,
         125,
-        "Home Penalty/TOL- 2ndHalf",
+        "Home Penalty/TOL- 2nd Half",
         385,
         2,
         R,

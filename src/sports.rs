@@ -1,3 +1,14 @@
+//! A collection of built-in sports to use to view an `RTDState`
+//!
+//! Basically, the buffer that `RTDState` holds needs to be interpreted somehow.
+//! That's where these sports come in -- they provide getters for each sport's
+//! fields. Each of these `Sport` implementors require an `RTDState` to be
+//! passed in (it can be accessed later with each sport's `rtd_state` mutable
+//! getter).
+//!
+//! If you enable the `serde` feature, then each of these sports will be able to
+//! be serialized by any `serde` serializer (no deserializer support).
+
 pub mod auto_racing;
 pub mod baseball;
 pub mod basketball;
@@ -30,16 +41,19 @@ pub trait Sport<DS: crate::rtd_state::data_source::RTDStateDataSource> {
 
 #[doc(hidden)]
 pub mod macros {
-    /// Builds a sport
+    /// Build a sport using a simplified syntax and auto-documenting methods
     ///
     /// # Parameters
     ///
     /// * `ident_name` should be the sport's name in UpperCamelCase
     /// * `sport_name` should be the human-readable name present in Daktronic's
     ///   documentation.
+    /// * `complete` should be a boolean literal specifying whether the sport
+    ///   should be marked as complete in its documentation.
     /// * Each `field` should follow the format:  
-    ///   `(getter_name, field_type, field, "Description", item, length, L/R, "Comment")`
-    #[macro_export]
+    ///   `(getter_name, field_type, field, "Description", item, length, L/R, "Comment", [optional literal] deprecate)`
+    ///
+    /// For examples, see the submodules.
     macro_rules! sport_builder {
         (
             $ident_name:ident,
@@ -89,17 +103,42 @@ pub mod macros {
         $( ($($field:tt)*) ),*
     ) => {
             $crate::sports::macros::__internal_paste! {
-                #[doc = "A struct providing accessors to the various "
-                        "fields of " $sport_name ".\n\nEach of these getters "
-                        "returns a different type corresponding to the raw "
-                        "data type from the hardware. A list of these fields can "
-                        "be found in Daktronic's documentation; see the readme "
-                        "of this crate for more details.\n\nTo use " $sport_name
-                        "'s accessors, pass this struct as a type parameter to `RTDState`.\n\n# "
-                        "Examples\n\n_These examples are auto-generated, so "
-                        "they may not work well._\n\n```\n// TODO: examples\n```\n\n"
-                        $doc_completion_header
-                        ]
+                #[doc = concat!("A struct providing accessors to the various ",
+                        "fields of ", $sport_name, ".\n\nEach of these getters ",
+                        "returns a different type corresponding to the raw ",
+                        "data type from the hardware. A list of these fields can ",
+                        "be found in Daktronic's documentation; see the readme ",
+                        "of this crate for more details.\n\nTo use ", $sport_name,
+                        "'s accessors, pass an `RTDState` to this struct's constructor.\n\n# ",
+                        "Examples\n\n_These examples are auto-generated, so ",
+                        "they may not work well._\n\n```ignore\n",
+r#"# use tokio;
+# use daktronics_allsport_5000::RTDState;
+# use tokio_serial::SerialPortBuilderExt; // for open_native_async
+# 
+# #[tokio::main]
+# fn main() {
+# let serial_stream = tokio_serial::new(tty_path, 19200)
+#     .parity(tokio_serial::Parity::None)
+#     .open_native_async()
+#     .unwrap();
+let rtd_state = RTDState::from_serial_stream(serial_stream, true);
+let sport = "#, stringify!($ident_name), r#"Sport::new(rtd_state);
+
+loop {
+    // get the underlying rtd_state to update it
+    let update_result = sport.rtd_state().update_async().await.unwrap();
+    
+    // the various accessors of this sport are now available
+    println!("The main clock time right now is: {}", sport.main_clock_time());
+
+    // if you're using the `serde` feature, you can also serialize if you want:
+    // println!("{}", serde_json::to_string(&sport));
+}
+# }"#,
+                        "\n```\n\n",
+                        $doc_completion_header,
+            )]
                 pub struct [<$ident_name Sport>]<DS: $crate::rtd_state::data_source::RTDStateDataSource> {
                     rtd_state: $crate::rtd_state::RTDState<DS>
                 }
@@ -329,7 +368,7 @@ pub mod macros {
     pub use __internal_sport_builder_serialize_item;
     #[doc(hidden)]
     pub use paste::paste as __internal_paste;
-    pub use sport_builder;
+    pub(super) use sport_builder;
 }
 
-pub use macros::sport_builder;
+use macros::sport_builder;

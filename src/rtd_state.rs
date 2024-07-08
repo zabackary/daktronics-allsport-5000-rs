@@ -1,3 +1,11 @@
+//! The main module for this crate, a struct storing the state of the real-time
+//! data
+//!
+//! The control console spits out a bunch of packets with data about events, but
+//! you need a buffer to store the data in between transmissions. That's where
+//! this module comes in; you can use it to hold a buffer with the current
+//! state, then access it with the sports getters available in their own module.
+
 pub mod data_source;
 
 use std::{fmt::Display, num::ParseIntError, str::Utf8Error};
@@ -12,18 +20,27 @@ use crate::packet::Packet;
 /// Of course, the entire state of the sports controller is not dumped to serial
 /// every time an event happens, so you must hold the state in memory and update
 /// it based on the incoming packets (you can do that with [`RTDState::update`]
-/// or [`RTDState::update_async`]). You must also supply a [`sport::Sport`] for
-/// the data to be interpreted as in the constructor, so make sure you do so.
+/// or [`RTDState::update_async`]). To read the fields of a sport and not the
+/// raw data buffer, you must pass your [`RTDState`] to a `Sport` constructor
+/// (various implementations are available in the `sports` module).
 ///
 /// # Examples
 ///
 /// ## Read the raw data buffer
-/// ```
-/// let mut rtd_state = RTDState::from_serial_stream(serial_port, true, MySport::new()).unwrap();
+///
+/// ```no_run
+/// # use daktronics_allsport_5000::RTDState;
+/// #
+/// # tokio_test::block_on(async {
+/// let mut rtd_state = RTDState::from_serial_stream(
+///     todo!(), // get the serial port from somewhere
+///     true     // we want to ignore unparsable packets (recommended)
+/// ).unwrap();
 ///
 /// while let Ok(_) = rtd_state.update_async().await {
 ///     println!("{:?}", rtd_state.data().expect("couldn't read data buffer"));
 /// }
+/// # });
 /// ```
 pub struct RTDState<DS: RTDStateDataSource> {
     data_source: DS,
@@ -38,13 +55,32 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
     /// `tokio-serial` feature (on by default).
     pub fn new(data_source: DS) -> Self {
         // as far as I can tell from the docs, the largest sport only uses
-        // ~1000 bytes of space
-        let mut data = BytesMut::with_capacity(1024);
+        // ~1000 bytes of space, so we use a nice 'round' number
+        Self::with_capacity(1024, data_source)
+    }
+
+    /// Create a new [`RTDState`] with the provided buffer size and data source
+    ///
+    /// This is intended for advanced use cases.
+    ///
+    /// Prefer using the plain [`RTDState::new`] if possible, but if you're in
+    /// a memory-constrained situation, you might want to allocate the smallest
+    /// possible buffer for the sport you're using instead of the default 1KiB.
+    ///
+    /// To figure out what the buffer size required for various sports is, check
+    /// out the source for the `Sport` you're using, scroll down to the bottom
+    /// and add the last field index with the last field length get the buffer
+    /// size. Note that errors may result if a packet's start index is
+    /// out-of-bounds for the buffer you allocated.
+    pub fn with_capacity(capacity: usize, data_source: DS) -> Self {
+        // allocate the `BytesMut` up-front then immediately fill it
+        let mut data = BytesMut::with_capacity(capacity);
         // the starting data for daktronics is blank spaces
         // safety: the buffer is immediately filled with empty data after the
         // size is increased
         unsafe {
             data.set_len(data.capacity());
+            // immediately fill the buffer after setting its length
             data.fill(b' ');
         }
         Self { data, data_source }
@@ -78,11 +114,14 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
     }
 
     /// Updates the internal state based on the contents of a packet. Usually,
-    /// you'll want to read a packet from a [RtdStateDataSource] using `update`
-    /// or `update_async` (if that's what you're doing)
+    /// you'll want to read a packet from a [`RTDStateDataSource`] using
+    /// [`RTDState::update`] or [`RTDState::update_async`] (if that's what
+    /// you're doing)
     pub fn update_from_packet(&mut self, packet: Packet) -> Result<(), RTDStateError<DS>> {
         let packet_data = packet.raw_data();
-        self.data[packet.start_index as usize..packet.start_index as usize + packet_data.len()]
+        // TODO: prevent panics by returning a soft Err when the start index
+        // is out-of-bounds
+        self.data[packet.start_index() as usize..packet.start_index() as usize + packet_data.len()]
             .copy_from_slice(&packet_data);
         Ok(())
     }
@@ -150,13 +189,17 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
     }
 }
 
+/// An error returned from an [`RTDState`] operation
 #[derive(Debug)]
 pub enum RTDStateError<DS: data_source::RTDStateDataSource> {
+    /// The backing data source returned an error
     DataSource(DS::Error),
-    InvalidData,
-    NoPacketData,
 }
 
+/// An error occurring while reading a field from an [`RTDState`].
+///
+/// As the sport implementations use the `RTDState::field_*` methods under the
+/// hood, they also return this in the event of an error.
 #[derive(Debug)]
 pub enum RTDStateFieldError {
     NoData,
@@ -176,6 +219,11 @@ impl Display for RTDStateFieldError {
 
 impl std::error::Error for RTDStateFieldError {}
 
+/// The justification of the field in the RTDState
+///
+/// Passing `Left` will trip the right side of the value for whitespace, `Right`
+/// will trim the left, and `None` will avoid whitespace processing and will
+/// return the raw value.
 #[derive(Debug)]
 pub enum RTDFieldJustification {
     Left,
