@@ -166,7 +166,7 @@ loop {
                 }
 
                 #[cfg(feature = "serde")]
-                impl<DS: rtd_state::data_source::RTDStateDataSource> serde::Serialize for [<$ident_name Sport>]<DS> {
+                impl<DS: $crate::rtd_state::data_source::RTDStateDataSource> serde::Serialize for [<$ident_name Sport>]<DS> {
                     // since the caller might have 0 arguments, imports might
                     // not be used
                     #[allow(unused)]

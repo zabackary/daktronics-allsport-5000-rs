@@ -1,6 +1,6 @@
 [package]
 name = "daktronics-allsport-5000"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["zabackary"]
 description = "A Rust implementation of decoders for the Daktronics All Sport 5000's serial output"
 license = "MIT"
