@@ -185,7 +185,7 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
     /// format.
     pub fn field_bool(&self, item: usize) -> Result<bool, RTDStateFieldError> {
         self.field_str(item, 1, RTDFieldJustification::None)
-            .map(|char| !char.is_empty())
+            .map(|char| !char.trim().is_empty())
     }
 }
 
@@ -221,7 +221,7 @@ impl std::error::Error for RTDStateFieldError {}
 
 /// The justification of the field in the RTDState
 ///
-/// Passing `Left` will trip the right side of the value for whitespace, `Right`
+/// Passing `Left` will trim the right side of the value for whitespace, `Right`
 /// will trim the left, and `None` will avoid whitespace processing and will
 /// return the raw value.
 #[derive(Debug)]
