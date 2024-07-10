@@ -92,11 +92,14 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
     ///
     /// DO NOT USE IF YOU'RE USING ASYNC
     pub fn update(&mut self) -> Result<bool, RTDStateError<DS>> {
-        let packet = match self.data_source.read_packet() {
+        let packet = match self
+            .data_source
+            .read_packet()
+            .map_err(RTDStateError::DataSource)?
+        {
             None => return Ok(false),
             Some(x) => x,
-        }
-        .map_err(RTDStateError::DataSource)?;
+        };
         self.update_from_packet(packet).map(|_| true)
     }
 
@@ -105,11 +108,15 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
     /// new data in the state from the packet.
     #[cfg(feature = "async")]
     pub async fn update_async(&mut self) -> Result<bool, RTDStateError<DS>> {
-        let packet = match self.data_source.read_packet_async().await {
+        let packet = match self
+            .data_source
+            .read_packet_async()
+            .await
+            .map_err(RTDStateError::DataSource)?
+        {
             None => return Ok(false),
             Some(x) => x,
-        }
-        .map_err(RTDStateError::DataSource)?;
+        };
         self.update_from_packet(packet).map(|_| true)
     }
 
