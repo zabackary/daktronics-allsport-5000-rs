@@ -72,12 +72,20 @@ impl Decoder for SerialRTDCodec {
                         // We found the byte, advance the cursor past it
                         buf.advance(position + 1);
                         // Prepare to read the data next `decode` pass
-                        self.state = SerialRTDCodecState::ReadingData { next_index: 0 }
+                        self.state = SerialRTDCodecState::ReadingData { next_index: 0 };
+                        // Immediately start the next pass if there's still data
+                        if buf.len() > 0 {
+                            self.decode(buf)
+                        } else {
+                            Ok(None)
+                        }
                     }
                     // Skip more
-                    None => buf.advance(buf.len()),
+                    None => {
+                        buf.advance(buf.len());
+                        Ok(None)
+                    }
                 }
-                Ok(None)
             }
             SerialRTDCodecState::ReadingData { next_index } => {
                 // Look for the body end byte

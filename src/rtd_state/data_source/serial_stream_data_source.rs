@@ -68,22 +68,22 @@ impl RTDStateDataSource for SerialStreamDataSource {
     }
 
     async fn read_packet_async(&mut self) -> Result<Option<Packet>, SerialStreamDataSourceError> {
-        let res = self
-            .reader
-            .next()
-            .await
-            .ok_or(SerialStreamDataSourceError::StreamExhausted)?;
-        if self.ignore_unsupported_packets
-            && matches!(
-                res,
-                Err(SerialRTDCodecError::PacketParseError(
-                    PacketParseError::UnsupportedPacket { .. }
-                ))
-            )
-        {
-            Ok(None)
+        let res = self.reader.next().await;
+        if let Some(res) = res {
+            if self.ignore_unsupported_packets
+                && matches!(
+                    res,
+                    Err(SerialRTDCodecError::PacketParseError(
+                        PacketParseError::UnsupportedPacket { .. }
+                    ))
+                )
+            {
+                Ok(None)
+            } else {
+                res.map(Some).map_err(SerialStreamDataSourceError::Codec)
+            }
         } else {
-            res.map(Some).map_err(SerialStreamDataSourceError::Codec)
+            Ok(None)
         }
     }
 }
@@ -108,8 +108,12 @@ impl SerialStreamDataSource {
         serial_stream.set_parity(tokio_serial::Parity::None)?;
         serial_stream.set_baud_rate(19200)?;
 
+        let mut reader = SerialRTDCodec::default().framed(serial_stream);
+        // no idea what this does but hopefully it helps
+        reader.set_backpressure_boundary(32);
+
         Ok(Self {
-            reader: SerialRTDCodec::default().framed(serial_stream),
+            reader,
             ignore_unsupported_packets,
         })
     }
