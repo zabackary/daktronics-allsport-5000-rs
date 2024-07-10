@@ -8,6 +8,8 @@
 //! hardware to test the UDP support that seems to be available for getting the
 //! real-time data (RTD) to a computer. See [`serial_stream_data_source`].
 
+use std::fmt::Debug;
+
 use crate::packet::Packet;
 
 /// The trait to implement for data sources
@@ -16,14 +18,14 @@ use crate::packet::Packet;
 /// either read_packet or read_packet_async (but read_packet can panic or return
 /// `None` for non-async data sources).
 pub trait RTDStateDataSource: Send {
-    type Error;
+    type Error: Debug;
 
-    fn read_packet(&mut self) -> Option<Result<Packet, Self::Error>>;
+    fn read_packet(&mut self) -> Result<Option<Packet>, Self::Error>;
 
     #[cfg(feature = "async")]
     fn read_packet_async(
         &mut self,
-    ) -> impl std::future::Future<Output = Option<Result<Packet, Self::Error>>> + Send;
+    ) -> impl std::future::Future<Output = Result<Option<Packet>, Self::Error>> + Send;
 }
 
 #[cfg(feature = "async")]

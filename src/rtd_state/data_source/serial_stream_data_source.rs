@@ -1,3 +1,6 @@
+use std::error::Error;
+use std::fmt::Display;
+
 use super::RTDStateDataSource;
 use futures_util::StreamExt;
 use tokio_serial::{SerialPort, SerialStream};
@@ -57,24 +60,30 @@ impl RTDState<SerialStreamDataSource> {
 }
 
 impl RTDStateDataSource for SerialStreamDataSource {
-    type Error = SerialRTDCodecError;
+    type Error = SerialStreamDataSourceError;
 
-    fn read_packet(&mut self) -> Option<Result<Packet, SerialRTDCodecError>> {
-        eprintln!("can't read synonymous packet from async SerialStreamDataSource");
-        None
+    fn read_packet(&mut self) -> Result<Option<Packet>, SerialStreamDataSourceError> {
+        eprintln!("can't read synchronous packet from async SerialStreamDataSource");
+        Err(SerialStreamDataSourceError::Unsupported)
     }
 
-    async fn read_packet_async(&mut self) -> Option<Result<Packet, SerialRTDCodecError>> {
-        let res = self.reader.next().await;
-        if self.ignore_unsupported_packets {
-            match res {
-                Some(Err(SerialRTDCodecError::PacketParseError(
-                    PacketParseError::UnsupportedPacket { header_bytes: _ },
-                ))) => None,
-                x => x,
-            }
+    async fn read_packet_async(&mut self) -> Result<Option<Packet>, SerialStreamDataSourceError> {
+        let res = self
+            .reader
+            .next()
+            .await
+            .ok_or(SerialStreamDataSourceError::StreamExhausted)?;
+        if self.ignore_unsupported_packets
+            && matches!(
+                res,
+                Err(SerialRTDCodecError::PacketParseError(
+                    PacketParseError::UnsupportedPacket { .. }
+                ))
+            )
+        {
+            Ok(None)
         } else {
-            res
+            res.map(Some).map_err(SerialStreamDataSourceError::Codec)
         }
     }
 }
@@ -105,3 +114,24 @@ impl SerialStreamDataSource {
         })
     }
 }
+
+#[derive(Debug)]
+pub enum SerialStreamDataSourceError {
+    Codec(SerialRTDCodecError),
+    Unsupported,
+    StreamExhausted,
+}
+
+impl Display for SerialStreamDataSourceError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SerialStreamDataSourceError::Codec(err) => write!(f, "codec error: {err}"),
+            SerialStreamDataSourceError::Unsupported => write!(f, "the operation is unsupported"),
+            SerialStreamDataSourceError::StreamExhausted => {
+                write!(f, "the internal serial stream has been exhausted")
+            }
+        }
+    }
+}
+
+impl Error for SerialStreamDataSourceError {}
