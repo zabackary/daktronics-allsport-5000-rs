@@ -203,6 +203,16 @@ pub enum RTDStateError<DS: data_source::RTDStateDataSource> {
     DataSource(DS::Error),
 }
 
+impl<DS: data_source::RTDStateDataSource> Display for RTDStateError<DS> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RTDStateError::DataSource(err) => write!(f, "data source error: {}", err),
+        }
+    }
+}
+
+impl<DS: data_source::RTDStateDataSource> std::error::Error for RTDStateError<DS> {}
+
 /// An error occurring while reading a field from an [`RTDState`].
 ///
 /// As the sport implementations use the `RTDState::field_*` methods under the
