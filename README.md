@@ -6,6 +6,7 @@
 [![Crates.io](https://img.shields.io/crates/v/daktronics-allsport-5000.svg)](https://crates.io/crates/daktronics-allsport-5000)
 [![License](https://img.shields.io/crates/l/daktronics-allsport-5000.svg)](https://github.com/daktronics-allsport-5000-rs/iced/blob/master/LICENSE)
 [![Downloads](https://img.shields.io/crates/d/daktronics-allsport-5000.svg)](https://crates.io/crates/daktronics-allsport-5000)
+[![CI status](https://github.com/zabackary/daktronics-allsport-5000-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/zabackary/daktronics-allsport-5000-rs/actions/workflows/ci.yml)
 
 ![](./assets/in-action.jpg)
 
