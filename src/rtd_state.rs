@@ -90,7 +90,8 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
     /// from the data source. Returns a boolean indicating whether there's any
     /// new data.
     ///
-    /// DO NOT USE IF YOU'RE USING ASYNC
+    /// If you're using the `tokio` feature, you should use [`update_async`]
+    /// instead. Doing otherwise may result in a panic.
     pub fn update(&mut self) -> Result<bool, RTDStateError<DS>> {
         let packet = match self
             .data_source
@@ -104,8 +105,10 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
     }
 
     /// Updates the state asynchronously with the next packet that can be read
-    /// from the data source. Returns a boolean indicating whether there's any
-    /// new data in the state from the packet.
+    /// from the data source.
+    ///
+    /// Returns a boolean indicating whether there's any new data in the state
+    /// from the packet.
     #[cfg(feature = "async")]
     pub async fn update_async(&mut self) -> Result<bool, RTDStateError<DS>> {
         let packet = match self
@@ -120,8 +123,9 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
         self.update_from_packet(packet).map(|_| true)
     }
 
-    /// Updates the internal state based on the contents of a packet. Usually,
-    /// you'll want to read a packet from a [`RTDStateDataSource`] using
+    /// Updates the internal state based on the contents of a packet.
+    ///
+    /// Usually, you'll want to read a packet from a [`RTDStateDataSource`] using
     /// [`RTDState::update`] or [`RTDState::update_async`] (if that's what
     /// you're doing)
     pub fn update_from_packet(&mut self, packet: Packet) -> Result<(), RTDStateError<DS>> {

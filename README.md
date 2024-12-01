@@ -1,41 +1,87 @@
 # Daktronics All Sport 5000 for Rust
 
+> Easily decode the serial output of a console and optionally serialize it.
+
 [![Documentation](https://docs.rs/daktronics-allsport-5000/badge.svg)](https://docs.rs/daktronics-allsport-5000)
 [![Crates.io](https://img.shields.io/crates/v/daktronics-allsport-5000.svg)](https://crates.io/crates/daktronics-allsport-5000)
 [![License](https://img.shields.io/crates/l/daktronics-allsport-5000.svg)](https://github.com/daktronics-allsport-5000-rs/iced/blob/master/LICENSE)
 [![Downloads](https://img.shields.io/crates/d/daktronics-allsport-5000.svg)](https://crates.io/crates/daktronics-allsport-5000)
 
+![](./assets/in-action.jpg)
+
 A Rust implementation of decoders for the Daktronics All Sport 5000's serial
-output.
+output. Please see the [documentation](https://docs.rs/daktronics-allsport-5000)
+for more help.
 
-Please see the [documentation](https://docs.rs/daktronics-allsport-5000).
+> [!NOTE]
+>
+> If you use this crate: let me know about your use case by
+> [creating a GitHub discussion](https://github.com/zabackary/daktronics-allsport-5000-rs/discussions)
+> or starring! It also lets me know other people find this crate interesting and
+> useful.
 
-**If you use this crate: let me know about your use case by
-[creating a GitHub discussion](https://github.com/zabackary/daktronics-allsport-5000-rs/discussions)!
-It also lets me know other people find this crate interesting and useful.**
+## Installation
 
-## High-level access
+Add this to your `Cargo.toml`:
+
+```toml
+daktronics-allsport-5000 = "0.3.1"
+```
+
+Or if you want to use the `serde` feature:
+
+```toml
+daktronics-allsport-5000 = { version = "0.3.1", features = ["serde"] }
+```
+
+Or do it with the CLI:
+
+```sh
+cargo add daktronics-allsport-5000
+```
+
+## Cargo features
+
+- Default features: `tokio-serial`
+- `tokio-serial`: Enables support for serial communication using the
+  `tokio-serial` crate.
+- `tokio`: Enables asynchronous support using the `tokio` crate.
+- `async`: Enables support for asynchronous programming, which as of right now
+  only works with Tokio.
+- `serde`: Enables serialization support of sports using the `serde` crate.
+
+## Where is this used?
+
+I made this crate to use in a project I'm working on, `daktronics-singular-ui`,
+which links together a Daktronics All Sport 5000 with a Singular.Live overlay.
+This powers overlays for
+[Christian Academy in Japan sports livestreams](https://caj.ac.jp/live).
+
+## Usage
+
+### High-level access
 
 Create a new `RTDState` instance with `RTDState::from_serial_stream` (available
-with default features enabled).
+with default features enabled). Get the `SerialStream` with `tokio_serial::new`
+then `open_native_async`. Check out the examples for more help.
 
 If you need any help, there should be more extensive documentation for each item
 at [docs.rs](https://docs.rs/daktronics-allsport-5000). Don't hesitate to
 [create a GitHub issue](https://github.com/zabackary/daktronics-allsport-5000-rs/issues)
 if something is unclear, either.
 
-### Sports
+#### Sports
 
 This crate supports all sports the control console supports. For a list of them,
 see the
 [`sports`](https://docs.rs/daktronics-allsport-5000/latest/daktronics_allsport_5000/sports/index.html)
 module documentation.
 
-### Examples
+#### Examples
 
-#### Getting a sport-specific field
+##### Getting a sport-specific field
 
-```no_run
+```rust
 use daktronics_allsport_5000::{
     RTDState,
     // there are lots of other sports available in their respective modules
@@ -62,11 +108,11 @@ async fn main() {
 }
 ```
 
-#### With Serde
+##### With Serde
 
 Enable the `serde` feature to enable serialization for sports.
 
-```ignore
+```rust
 use tokio;
 use daktronics_allsport_5000::{
     RTDState,
@@ -97,9 +143,9 @@ async fn main() {
 }
 ```
 
-#### Getting the raw data buffer
+##### Getting the raw data buffer
 
-```no_run
+```rust
 use tokio;
 use daktronics_allsport_5000::{RTDState, RTDFieldJustification};
 use tokio_serial::SerialPortBuilderExt; // for open_native_async
@@ -121,19 +167,7 @@ async fn main() {
 }
 ```
 
-## In other languages...
-
-The same concept as this crate is also implemented in
-[Python by @FlantasticDan](https://github.com/FlantasticDan/scorebox-consoles),
-[C# by @JimThatcher](https://github.com/JimThatcher/sport-streamer), and
-[Python again by @fimion](https://github.com/fimion/pydak). In fact, the data in
-this crate is extracted from a PDF provided by @fimion, so thank you!
-
-If you're interested in porting this crate to another language, check out the
-Excel spreadsheet I compiled with the data that underpins this crate in
-[`./sports_data`](./sports_data/).
-
-## Low-level access
+### Low-level access
 
 When used with the `tokio` feature, this package provides a `tokio-util` codec
 implementing `Decoder` to decode packets from a serial stream from the control
@@ -147,3 +181,20 @@ that, you can use `daktronics_allsport_5000::packet::Packet`'s
 format. Then, you can provide that to the main `RTDState` struct by implementing
 `daktronics_allsport_5000::rtd_state::data_source::RTDStateDataSource` then
 giving that to `RTDState::new`. After that, everything works as normal.
+
+## Inspiration
+
+The same concept as this crate is also implemented in
+[Python by @FlantasticDan](https://github.com/FlantasticDan/scorebox-consoles),
+[C# by @JimThatcher](https://github.com/JimThatcher/sport-streamer), and
+[Python again by @fimion](https://github.com/fimion/pydak). In fact, the data in
+this crate is extracted from a PDF provided by @fimion, so thank you!
+
+The offsets of the various fields have been processed from a PDF and typed by
+hand. If you're interested in porting this crate to another language, check out
+the Excel spreadsheet I compiled with the data that underpins this crate in
+[`./sports_data`](./sports_data/).
+
+Given that this protocol is technically proprietary, please note that this crate
+does not come with any warranty. For more details,
+[see the license](./LICENSE.md).
