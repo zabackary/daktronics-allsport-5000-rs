@@ -21,6 +21,17 @@ pub struct Packet {
 }
 
 impl<'a> Packet {
+    /// Creates a new packet from the given data and start index
+    ///
+    /// `data` is the data sent from the control console, and `start_index` is
+    /// the index in the data buffer that the data belongs at.
+    ///
+    /// This function is mostly used for testing purposes, as you should be
+    /// using the `TryFrom` implementations to parse packets from bytes.
+    pub fn new(data: Bytes, start_index: u32) -> Self {
+        Packet { data, start_index }
+    }
+
     /// Gets the decoded data sent from the control console
     ///
     /// This data is actually a string, so this function does the parsing for
@@ -70,8 +81,9 @@ impl TryFrom<Bytes> for Packet {
     type Error = PacketParseError;
 
     /// Parse the packet from some data.
-    /// Note that I have no idea what hash function is used, so the hash isn't
-    /// checked.
+    ///
+    /// Note that I have no idea what hash function is used (it's probably a
+    /// simple one I can't figure out), so the hash isn't checked.
     fn try_from(mut value: Bytes) -> Result<Packet, PacketParseError> {
         // extract the first part (not sure what 00000000 is, so forgetting)
         let _ = value.split_to(
