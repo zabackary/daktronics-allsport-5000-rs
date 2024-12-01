@@ -16,7 +16,7 @@ edition = "2021"
 bytes = "^1.6.0"
 futures-util = { version = "^0.3.30", optional = true }
 paste = "^1.0.15"
-serde = { version = "^1.0.203", optional = true }
+serde = { version = "^1.0.215", optional = true }
 tokio = { version = "^1.38.0", default-features = false, optional = true }
 tokio-serial = { version = "^5.4.4", features = ["codec"], optional = true }
 tokio-util = { version = "^0.7.12", optional = true }
