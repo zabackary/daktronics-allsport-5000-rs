@@ -14,6 +14,13 @@ A Rust implementation of decoders for the Daktronics All Sport 5000's serial
 output. Please see the [documentation](https://docs.rs/daktronics-allsport-5000)
 for more help.
 
+daktronics-allsport-5000-rs is the most complete library for decoding Daktronics'
+All Sport 5000 console's serial output in real-time.
+
+This is a Rust library and thus can be installed using Cargo, the Rust package
+manager. However, a standalone binary is under development for integration in
+non-Rust workflows.
+
 > [!NOTE]
 >
 > If you use this crate: let me know about your use case by
@@ -53,8 +60,10 @@ cargo add daktronics-allsport-5000
 
 ## Where is this used?
 
-I made this crate to use in a project I'm working on, `daktronics-singular-ui`,
-which links together a Daktronics All Sport 5000 with a Singular.Live overlay.
+I made this crate to use in another project I'm working on,
+[`daktronics-singular-ui`](https://github.com/zabackary/daktronics-singular-ui)
+(also open source on GitHub), which allows producers to link together Daktronics
+All Sport 5000 controllers with a Singular.Live overlay in real time.
 This powers overlays for
 [Christian Academy in Japan sports livestreams](https://caj.ac.jp/live).
 
@@ -78,9 +87,7 @@ see the
 [`sports`](https://docs.rs/daktronics-allsport-5000/latest/daktronics_allsport_5000/sports/index.html)
 module documentation.
 
-#### Examples
-
-##### Getting a sport-specific field
+#### Example: getting a sport-specific field
 
 ```rust
 use daktronics_allsport_5000::{
@@ -105,65 +112,6 @@ async fn main() {
         let update_result = basketball.rtd_state().update_async().await.unwrap();
 
         basketball.main_clock_time(); // -> Result<&str, ...>
-    }
-}
-```
-
-##### With Serde
-
-Enable the `serde` feature to enable serialization for sports.
-
-```rust
-use tokio;
-use daktronics_allsport_5000::{
-    RTDState,
-    sports::basketball::BasketballSport
-};
-use tokio_serial::SerialPortBuilderExt; // for open_native_async
-use crate::daktronics_allsport_5000::sports::Sport; // for rtd_state
-
-#[tokio::main]
-async fn main() {
-    let serial_stream = tokio_serial::new("/dev/ttyUSB0", 19200)
-        .parity(tokio_serial::Parity::None)
-        .open_native_async()
-        .unwrap();
-    let rtd_state = RTDState::from_serial_stream(serial_stream, true).unwrap();
-    let basketball = BasketballSport::new(rtd_state);
-
-    loop {
-        // get the underlying rtd_state to update it
-        let update_result = basketball
-            .rtd_state()
-            .update_async()
-            .await
-            .unwrap();
-
-        serde_json::to_string(&basketball); // -> Result<String, ...>
-    }
-}
-```
-
-##### Getting the raw data buffer
-
-```rust
-use tokio;
-use daktronics_allsport_5000::{RTDState, RTDFieldJustification};
-use tokio_serial::SerialPortBuilderExt; // for open_native_async
-
-#[tokio::main]
-async fn main() {
-    let serial_stream = tokio_serial::new("/dev/ttyUSB0", 19200)
-        .parity(tokio_serial::Parity::None)
-        .open_native_async()
-        .unwrap();
-    let mut rtd_state = RTDState::from_serial_stream(serial_stream, true).unwrap();
-
-    loop {
-        let update_result = rtd_state.update_async().await.unwrap();
-
-        // do something with `rtd_state`
-        rtd_state.field_str(1, 5, RTDFieldJustification::Left); // -> Result<&str, ...>
     }
 }
 ```
