@@ -518,6 +518,26 @@ super::sport_builder!(
     ),
     (player_foul, &str, 58, "Player-Foul ('nnn')", 256, 3, L, ""),
     (
+        player_foul_player,
+        i32,
+        -1,
+        "Player-Foul ('nnn') -- Player",
+        256,
+        2,
+        R,
+        "Not in spec, but useful (extracted from #58)"
+    ),
+    (
+        player_foul_foul,
+        i32,
+        -1,
+        "Player-Foul ('nnn') -- Foul",
+        258,
+        1,
+        L,
+        "Not in spec, but useful (extracted from #58)"
+    ),
+    (
         player_foul_points,
         &str,
         59,
