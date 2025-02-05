@@ -33,13 +33,13 @@ non-Rust workflows.
 Add this to your `Cargo.toml`:
 
 ```toml
-daktronics-allsport-5000 = "0.4.0"
+daktronics-allsport-5000 = "0.5.0"
 ```
 
 Or if you want to use the `serde` feature:
 
 ```toml
-daktronics-allsport-5000 = { version = "0.4.0", features = ["serde"] }
+daktronics-allsport-5000 = { version = "0.5.0", features = ["serde"] }
 ```
 
 Or do it with the CLI:
