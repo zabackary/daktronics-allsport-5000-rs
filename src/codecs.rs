@@ -119,6 +119,7 @@ impl Decoder for SerialRTDCodec {
 
 /// An error occurring while fetching the next packet
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum SerialRTDCodecError {
     /// Couldn't parse a packet.
     PacketParseError(PacketParseError),
