@@ -1,3 +1,4 @@
+#![cfg(not(doctest))]
 //! A collection of built-in sports to use to view an `RTDState`
 //!
 //! Basically, the buffer that `RTDState` holds needs to be interpreted somehow.
@@ -111,7 +112,7 @@ pub mod macros {
                         "of this crate for more details.\n\nTo use ", $sport_name,
                         "'s accessors, pass an `RTDState` to this struct's constructor.\n\n# ",
                         "Examples\n\n_These examples are auto-generated, so ",
-                        "they may not work well._\n\n```ignore\n",
+                        "they may not work well._\n\n```\n",
 r#"# use tokio;
 # use daktronics_allsport_5000::RTDState;
 # use tokio_serial::SerialPortBuilderExt; // for open_native_async
