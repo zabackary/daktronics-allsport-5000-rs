@@ -6,9 +6,9 @@ use futures_util::StreamExt;
 use tokio_serial::{SerialPort, SerialStream};
 use tokio_util::codec::{Decoder, Framed};
 
+use crate::RTDState;
 use crate::codecs::{SerialRTDCodec, SerialRTDCodecError};
 use crate::packet::{Packet, PacketParseError};
-use crate::RTDState;
 
 /// A data source reading from a serial connection
 #[derive(Debug)]

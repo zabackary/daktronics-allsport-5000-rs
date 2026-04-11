@@ -1,9 +1,9 @@
 use std::env;
 
 use daktronics_allsport_5000::{
-    rtd_state::data_source::RTDStateDataSource,
-    sports::{basketball::BasketballSport, Sport},
     RTDState,
+    rtd_state::data_source::RTDStateDataSource,
+    sports::{Sport, basketball::BasketballSport},
 };
 use tokio_serial::SerialPortBuilderExt;
 
