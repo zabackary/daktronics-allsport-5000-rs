@@ -74,7 +74,7 @@ impl Decoder for SerialRTDCodec {
                         // Prepare to read the data next `decode` pass
                         self.state = SerialRTDCodecState::ReadingData { next_index: 0 };
                         // Immediately start the next pass if there's still data
-                        if buf.len() > 0 {
+                        if !buf.is_empty() {
                             self.decode(buf)
                         } else {
                             Ok(None)
