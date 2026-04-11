@@ -85,6 +85,17 @@ impl TryFrom<Bytes> for Packet {
     /// Note that I have no idea what hash function is used (it's probably a
     /// simple one I can't figure out), so the hash isn't checked.
     fn try_from(mut value: Bytes) -> Result<Packet, PacketParseError> {
+        // look ahead into the packet to calculate the expected checksum before we begin
+        // the checksum algorithm simply sums up all the bytes in the packet, wrapping
+        // around on overflow. the sum is then converted to a 2-digit uppercase hex str
+        let expected_checksum_value = value.iter().take_while(|&&byte| byte != 0x04).fold(
+            // the checksum is calculated over the data **and** the separator byte,
+            // so we start with the value of the separator byte (0x04) to account for that
+            0x04u8,
+            |sum, byte| sum.wrapping_add(*byte),
+        );
+        let expected_checksum = format!("{:02X}", expected_checksum_value);
+
         // extract the first part (not sure what 00000000 is, so forgetting)
         let _ = value.split_to(
             value
@@ -127,7 +138,10 @@ impl TryFrom<Bytes> for Packet {
         value.advance(1); // skip the separator byte
 
         // extract the checksum (don't know the hash algorithm, so skipping)
-        let _ = value;
+        let checksum = value;
+        if checksum != expected_checksum.as_bytes() {
+            return Err(PacketParseError::IllFormed);
+        }
 
         Ok(Packet { data, start_index })
     }
@@ -188,7 +202,7 @@ mod tests {
 
     #[test]
     fn test_packet_offset() {
-        const PACKET: &[u8] = b"00000000\x010042100006\x0216:0916:09   16:0916:09    s   \x0449";
+        const PACKET: &[u8] = b"00000000\x010042100006\x0216:0916:09   16:0916:09    s   \x044F";
 
         let packet = Packet::try_from(Bytes::from_static(PACKET)).unwrap();
         assert_eq!(packet.start_index, 6);
