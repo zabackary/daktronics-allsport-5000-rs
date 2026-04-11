@@ -120,6 +120,7 @@ impl SerialStreamDataSource {
 }
 
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum SerialStreamDataSourceError {
     Codec(SerialRTDCodecError),
     Unsupported,

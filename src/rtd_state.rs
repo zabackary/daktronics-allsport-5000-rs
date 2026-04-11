@@ -216,6 +216,7 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
 
 /// An error returned from an [`RTDState`] operation
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum RTDStateError<DS: data_source::RTDStateDataSource> {
     /// The backing data source returned an error
     DataSource(DS::Error),
@@ -236,6 +237,7 @@ impl<DS: data_source::RTDStateDataSource> std::error::Error for RTDStateError<DS
 /// As the sport implementations use the `RTDState::field_*` methods under the
 /// hood, they also return this in the event of an error.
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum RTDStateFieldError {
     NoData,
     ParseIntError(ParseIntError),
