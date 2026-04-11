@@ -172,3 +172,42 @@ impl fmt::Display for PacketParseError {
 }
 
 impl std::error::Error for PacketParseError {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_packet_basic() {
+        const PACKET: &[u8] = b"00000000\x010042100000\x0216:0916:09   16:0916:09    s   \x0449";
+
+        let packet = Packet::try_from(Bytes::from_static(PACKET)).unwrap();
+        assert_eq!(packet.start_index, 0);
+        assert_eq!(packet.data().unwrap(), "16:0916:09   16:0916:09    s   ");
+    }
+
+    #[test]
+    fn test_packet_offset() {
+        const PACKET: &[u8] = b"00000000\x010042100006\x0216:0916:09   16:0916:09    s   \x0449";
+
+        let packet = Packet::try_from(Bytes::from_static(PACKET)).unwrap();
+        assert_eq!(packet.start_index, 6);
+        assert_eq!(packet.data().unwrap(), "16:0916:09   16:0916:09    s   ");
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_packet_malformed() {
+        const PACKET: &[u8] = b"00000000\x010042100006\x0216:0916:09   asfkjkj09    s   \x0449";
+
+        let _ = Packet::try_from(Bytes::from_static(PACKET)).expect("should panic");
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_packet_unknown_header() {
+        const PACKET: &[u8] = b"00000000\x010032100006\x0216:0916:09   asfkjkj09    s   \x0449";
+
+        let _ = Packet::try_from(Bytes::from_static(PACKET)).expect("should panic");
+    }
+}

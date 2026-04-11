@@ -143,3 +143,28 @@ impl From<io::Error> for SerialRTDCodecError {
 }
 
 impl std::error::Error for SerialRTDCodecError {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_decode_sync_idle() {
+        let mut codec = SerialRTDCodec::new();
+        let mut buf = BytesMut::from(&b"abc\x16def"[..]);
+        assert!(codec.decode(&mut buf).unwrap().is_none());
+        assert_eq!(buf, b"def"[..]);
+    }
+
+    #[test]
+    fn test_decode_framed_packet() {
+        let mut codec = SerialRTDCodec::new();
+        let mut buf = BytesMut::from(&b"abc\x16packet\x17def"[..]);
+        match codec.decode(&mut buf) {
+            Err(SerialRTDCodecError::PacketParseError(_)) => {
+                // expected, since "packet" isn't a valid packet
+            }
+            res => panic!("unexpected result: {res:?}"),
+        }
+    }
+}

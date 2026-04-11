@@ -267,3 +267,81 @@ pub enum RTDFieldJustification {
     Right,
     None,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    impl RTDStateDataSource for () {
+        type Error = String;
+
+        fn read_packet(&mut self) -> Result<Option<Packet>, Self::Error> {
+            Ok(None)
+        }
+
+        #[cfg(feature = "async")]
+        async fn read_packet_async(&mut self) -> Result<Option<Packet>, Self::Error> {
+            Ok(None)
+        }
+    }
+
+    #[test]
+    fn test_field_str() {
+        let mut state = RTDState::with_capacity(10, ());
+        state.data[0..10].copy_from_slice(b"  hello   ");
+        assert_eq!(
+            state.field_str(1, 10, RTDFieldJustification::Left).unwrap(),
+            "  hello"
+        );
+        assert_eq!(
+            state
+                .field_str(1, 10, RTDFieldJustification::Right)
+                .unwrap(),
+            "hello   "
+        );
+        assert_eq!(
+            state.field_str(1, 10, RTDFieldJustification::None).unwrap(),
+            "  hello   "
+        );
+    }
+
+    #[test]
+    fn test_field_i32() {
+        let mut state = RTDState::with_capacity(10, ());
+        state.data[0..10].copy_from_slice(b"  12345   ");
+        assert_eq!(
+            state.field_i32(3, 7, RTDFieldJustification::Left).unwrap(),
+            12345
+        );
+    }
+
+    #[test]
+    fn test_field_bool_true() {
+        let mut state = RTDState::with_capacity(1, ());
+        state.data[0..1].copy_from_slice(b"h");
+        assert!(state.field_bool(1).unwrap());
+    }
+
+    #[test]
+    fn test_field_bool_false() {
+        let mut state = RTDState::with_capacity(1, ());
+        state.data[0..1].copy_from_slice(b" ");
+        assert!(!state.field_bool(1).unwrap());
+    }
+
+    #[test]
+    fn test_update_from_packet() {
+        let mut state = RTDState::with_capacity(10, ());
+        let packet = Packet::new(bytes::Bytes::copy_from_slice(b"test"), 0);
+        state.update_from_packet(packet).unwrap();
+        assert_eq!(&state.data[0..4], b"test");
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_field_str_empty() {
+        let mut state = RTDState::with_capacity(10, ());
+        state.data[0..10].copy_from_slice(b"          ");
+        state.field_str(1, 10, RTDFieldJustification::Left).unwrap();
+    }
+}
