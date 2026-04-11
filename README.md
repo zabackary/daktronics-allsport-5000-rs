@@ -133,11 +133,16 @@ giving that to `RTDState::new`. After that, everything works as normal.
 
 ## Inspiration
 
-The same concept as this crate is also implemented in
-[Python by @FlantasticDan](https://github.com/FlantasticDan/scorebox-consoles),
-[C# by @JimThatcher](https://github.com/JimThatcher/sport-streamer), and
-[Python again by @fimion](https://github.com/fimion/pydak). In fact, the data in
-this crate is extracted from a PDF provided by @fimion, so thank you!
+### Related repositories
+
+- Python - [@FlantasticDan/scorebox-consoles](https://github.com/FlantasticDan/scorebox-consoles)
+- Python - [fimion/pydak](https://github.com/fimion/pydak)
+- C# - [JimThatcher/sport-streamer](https://github.com/JimThatcher/sport-streamer)
+- C#, Python - [JoshuaCarroll/scoredata](https://github.com/JoshuaCarroll/scoredata)
+
+Thank you for the initial reverse-engineering efforts by the above people! In fact,
+the data in this crate is extracted from a PDF provided by @fimion, so thank you
+especially!
 
 The offsets of the various fields have been processed from a PDF and typed by
 hand. If you're interested in porting this crate to another language, check out
