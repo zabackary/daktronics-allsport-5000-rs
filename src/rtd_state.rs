@@ -148,6 +148,16 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
     ///
     /// Note that **`item` is one-based**, following Daktronics' documentation
     /// format.
+    ///
+    /// The `justify` parameter controls how whitespace is handled in the field.
+    /// Passing `Left` will trim the right side of the value for whitespace, `Right`
+    /// will trim the left, and `None` will avoid whitespace processing and will
+    /// return the raw value. See [`RTDFieldJustification`] for more details.
+    ///
+    /// > [!WARNING]
+    /// > If the item is empty or out-of-bounds, this method will return
+    /// > an error. If you need to get the raw field content, regardless of whether
+    /// > it is empty or not, avoid passing a justification.
     pub fn field_str(
         &self,
         item: usize,
@@ -155,6 +165,10 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
         justify: RTDFieldJustification,
     ) -> Result<&str, RTDStateFieldError> {
         let real_index = item - 1;
+        if (real_index + length) > self.data.len() {
+            // the field is out-of-bounds
+            return Err(RTDStateFieldError::NoData);
+        }
         let field_bytes = &self.data[real_index..real_index + length];
         let mut field_str =
             std::str::from_utf8(field_bytes).map_err(RTDStateFieldError::Utf8Error)?;
