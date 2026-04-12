@@ -1,9 +1,10 @@
 //! Contains a struct representing one packet sent from the control console.
 //!
 //! See [`Packet`] for more details.
-use std::{fmt, num::ParseIntError, str::Utf8Error};
+use std::{num::ParseIntError, str::Utf8Error};
 
 use bytes::{Buf, Bytes};
+use snafu::{OptionExt, ResultExt as _, Snafu};
 
 /// Represents a packet sent from the control console
 ///
@@ -101,7 +102,9 @@ impl TryFrom<Bytes> for Packet {
             value
                 .iter()
                 .position(|b| *b == 0x01)
-                .ok_or(PacketParseError::IllFormed)?,
+                .context(IllFormedSnafu {
+                    reason: "missing header",
+                })?,
         );
         value.advance(1); // skip the separator byte
 
@@ -112,7 +115,9 @@ impl TryFrom<Bytes> for Packet {
                 .position(|b| *b == 0x02)
                 // some packets don't have data, so extract until the checksum
                 .or_else(|| value.iter().position(|b| *b == 0x04))
-                .ok_or(PacketParseError::IllFormed)?,
+                .context(IllFormedSnafu {
+                    reason: "missing checksum without data",
+                })?,
         );
         value.advance(1); // skip the separator byte
         let start_index: u32 = std::str::from_utf8(
@@ -124,23 +129,24 @@ impl TryFrom<Bytes> for Packet {
                     header_bytes: header.clone(),
                 })?,
         )
-        .map_err(PacketParseError::BadTextEncoding)?
+        .context(BadTextEncodingSnafu)?
         .parse()
-        .map_err(PacketParseError::NumberParseFailure)?;
+        .context(NumberParseFailureSnafu)?;
 
         // extract the data
-        let data = value.split_to(
-            value
-                .iter()
-                .position(|b| *b == 0x04)
-                .ok_or(PacketParseError::IllFormed)?,
-        );
+        let data = value.split_to(value.iter().position(|b| *b == 0x04).context(
+            IllFormedSnafu {
+                reason: "missing checksum",
+            },
+        )?);
         value.advance(1); // skip the separator byte
 
         // extract the checksum (don't know the hash algorithm, so skipping)
         let checksum = value;
         if checksum != expected_checksum.as_bytes() {
-            return Err(PacketParseError::IllFormed);
+            return Err(PacketParseError::IllFormed {
+                reason: "checksum mismatch",
+            });
         }
 
         Ok(Packet { data, start_index })
@@ -148,44 +154,30 @@ impl TryFrom<Bytes> for Packet {
 }
 
 /// An error occurring during the packet parsing stage
-#[derive(Debug)]
+#[derive(Debug, Snafu)]
+#[non_exhaustive]
 pub enum PacketParseError {
     /// The packet's type is unsupported
     ///
     /// The header is provided for convenience.
+    #[snafu(display("unsupported packet type with header bytes: {:?}", header_bytes))]
     UnsupportedPacket { header_bytes: Bytes },
-    /// The packet is ill-formed, i.e., it appears to be half-finished
-    IllFormed,
+    /// The packet is ill-formed in some way
+    #[snafu(display("packet is ill-formed: {}", reason))]
+    IllFormed { reason: &'static str },
     /// The bytes representing the start_index of the `Packet` are malformed
     ///
     /// Those bytes are actually encoded as ASCII for some reason, so there is a
     /// chance that there is a decoding error (however small).
-    BadTextEncoding(Utf8Error),
+    #[snafu(display("bad text encoding in packet: {}", source))]
+    BadTextEncoding { source: Utf8Error },
     /// The bytes representing the start_index of the `Packet` aren't a number
     ///
     /// Those bytes are encoded in ASCII for some reason, so it's possible that
     /// we couldn't parse the int.
-    NumberParseFailure(ParseIntError),
+    #[snafu(display("couldn't parse number: {}", source))]
+    NumberParseFailure { source: ParseIntError },
 }
-
-impl fmt::Display for PacketParseError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            PacketParseError::UnsupportedPacket { header_bytes: _ } => {
-                write!(f, "unsupported packet type")
-            }
-            PacketParseError::IllFormed => write!(f, "packet is ill-formed"),
-            PacketParseError::BadTextEncoding(err) => {
-                write!(f, "bad text encoding in packet: {}", err)
-            }
-            PacketParseError::NumberParseFailure(err) => {
-                write!(f, "couldn't parse number: {}", err)
-            }
-        }
-    }
-}
-
-impl std::error::Error for PacketParseError {}
 
 #[cfg(test)]
 mod tests {
