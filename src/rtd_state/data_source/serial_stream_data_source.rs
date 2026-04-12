@@ -1,6 +1,3 @@
-use std::error::Error;
-use std::fmt::Display;
-
 use super::RTDStateDataSource;
 use futures_util::StreamExt;
 use snafu::{ResultExt, Snafu};
@@ -9,7 +6,7 @@ use tokio_util::codec::{Decoder, Framed};
 
 use crate::RTDState;
 use crate::codecs::{SerialRTDCodec, SerialRTDCodecError};
-use crate::packet::{Packet, PacketParseError};
+use crate::packet::Packet;
 
 /// A data source reading from a serial connection
 #[derive(Debug)]
@@ -17,17 +14,17 @@ pub struct SerialStreamDataSource {
     /// The framed serial reader
     reader: Framed<SerialStream, SerialRTDCodec>,
     /// Whether the data source should skip unsupported packets
-    ignore_unsupported_packets: bool,
+    ignore_malformed_packets: bool,
 }
 
 // An extension to RTDState providing a helper builder
 impl RTDState<SerialStreamDataSource> {
     /// Create a new [`RTDState`] from a serial stream representing a connection
-    /// with the Daktronics All-Sport 5000's serial output. By passing `true` to
-    /// `ignore_unsupported_packets`, it will ignore unsupported packets. As the
-    /// author of the crate doesn't understand the protocol well enough to know
-    /// what every packet means (and thus there are packets that the decoder
-    /// doesn't understand), you should **pass `true` as of right now**.
+    /// with the Daktronics All Sport 5000's serial output.
+    ///
+    /// By passing `true` for `ignore_unsupported_packets`, the data source will
+    /// skip over malformed and unsupported packets. (This is a breaking change
+    /// from 0.4.0, where only unsupported packets were skipped.)
     ///
     /// The underlying implementation creates an
     /// [`SerialStreamDataSource`] which will configure the serial stream for
@@ -51,11 +48,11 @@ impl RTDState<SerialStreamDataSource> {
     #[cfg(feature = "tokio-serial")]
     pub fn from_serial_stream(
         serial_stream: tokio_serial::SerialStream,
-        ignore_unsupported_packets: bool,
+        ignore_malformed_packets: bool,
     ) -> Result<Self, tokio_serial::Error> {
         Ok(Self::new(SerialStreamDataSource::new(
             serial_stream,
-            ignore_unsupported_packets,
+            ignore_malformed_packets,
         )?))
     }
 }
@@ -70,13 +67,8 @@ impl RTDStateDataSource for SerialStreamDataSource {
     async fn read_packet_async(&mut self) -> Result<Option<Packet>, SerialStreamDataSourceError> {
         let res = self.reader.next().await;
         if let Some(res) = res {
-            if self.ignore_unsupported_packets
-                && matches!(
-                    res,
-                    Err(SerialRTDCodecError::PacketParseError(
-                        PacketParseError::UnsupportedPacket { .. }
-                    ))
-                )
+            if self.ignore_malformed_packets
+                && matches!(res, Err(SerialRTDCodecError::PacketParseError { .. }))
             {
                 Ok(None)
             } else {
@@ -94,15 +86,15 @@ impl SerialStreamDataSource {
     /// The serial stream passed in will be automatically configured to the
     /// right parity and baud rate, so don't worry too much about it.
     ///
-    /// This constructor has the parameter `ignore_unsupported_packets`, which,
-    /// when `true`, will skip over packets unsupported by this crate and return
+    /// This constructor has the parameter `ignore_malformed_packets`, which,
+    /// when `true`, will skip over malformed packets and return
     /// `None` instead of an error when asked for a packet by the `RTDState`.
     /// **For now, please set it to `true`**, since the documentation is not
     /// public and thus not all packet types are fully understood by the crate
     /// author.
     pub fn new(
         mut serial_stream: tokio_serial::SerialStream,
-        ignore_unsupported_packets: bool,
+        ignore_malformed_packets: bool,
     ) -> Result<Self, tokio_serial::Error> {
         // set up the serial port for use
         serial_stream.set_parity(tokio_serial::Parity::None)?;
@@ -114,7 +106,7 @@ impl SerialStreamDataSource {
 
         Ok(Self {
             reader,
-            ignore_unsupported_packets,
+            ignore_malformed_packets,
         })
     }
 }
