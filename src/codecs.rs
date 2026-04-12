@@ -2,8 +2,9 @@
 
 use super::packet::{Packet, PacketParseError};
 use bytes::{Buf, Bytes, BytesMut};
+use snafu::{ResultExt as _, Snafu};
 
-use std::{fmt, io};
+use std::io;
 
 use tokio_util::codec::Decoder;
 
@@ -100,9 +101,7 @@ impl Decoder for SerialRTDCodec {
                         self.state = SerialRTDCodecState::ReadingSyncIdle;
                         // Return the frame
                         Ok(Some(
-                            Bytes::from(data)
-                                .try_into()
-                                .map_err(SerialRTDCodecError::PacketParseError)?,
+                            Bytes::from(data).try_into().context(PacketParseSnafu)?,
                         ))
                     }
                     // We haven't found the byte yet, so resume the search next
@@ -118,31 +117,22 @@ impl Decoder for SerialRTDCodec {
 }
 
 /// An error occurring while fetching the next packet
-#[derive(Debug)]
+#[derive(Debug, Snafu)]
 #[non_exhaustive]
 pub enum SerialRTDCodecError {
     /// Couldn't parse a packet.
-    PacketParseError(PacketParseError),
+    #[snafu(display("packet parse error: {}", source))]
+    PacketParseError { source: PacketParseError },
     /// An IO error occurred.
-    Io(io::Error),
-}
-
-impl fmt::Display for SerialRTDCodecError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            SerialRTDCodecError::Io(e) => write!(f, "io error while reading serial: {}", e),
-            SerialRTDCodecError::PacketParseError(e) => write!(f, "packet parse error: {}", e),
-        }
-    }
+    #[snafu(display("io error while reading serial: {}", source))]
+    Io { source: io::Error },
 }
 
 impl From<io::Error> for SerialRTDCodecError {
-    fn from(e: io::Error) -> SerialRTDCodecError {
-        SerialRTDCodecError::Io(e)
+    fn from(source: io::Error) -> Self {
+        Self::Io { source }
     }
 }
-
-impl std::error::Error for SerialRTDCodecError {}
 
 #[cfg(test)]
 mod tests {
@@ -161,7 +151,7 @@ mod tests {
         let mut codec = SerialRTDCodec::new();
         let mut buf = BytesMut::from(&b"abc\x16packet\x17def"[..]);
         match codec.decode(&mut buf) {
-            Err(SerialRTDCodecError::PacketParseError(_)) => {
+            Err(SerialRTDCodecError::PacketParseError { .. }) => {
                 // expected, since "packet" isn't a valid packet
             }
             res => panic!("unexpected result: {res:?}"),

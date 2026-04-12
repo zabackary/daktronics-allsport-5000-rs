@@ -8,10 +8,11 @@
 
 pub mod data_source;
 
-use std::{fmt::Display, num::ParseIntError, str::Utf8Error};
+use std::{num::ParseIntError, str::Utf8Error};
 
 use bytes::BytesMut;
 use data_source::RTDStateDataSource;
+use snafu::{ResultExt as _, Snafu};
 
 use crate::packet::Packet;
 
@@ -96,7 +97,7 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
         let packet = match self
             .data_source
             .read_packet()
-            .map_err(RTDStateError::DataSource)?
+            .map_err(|source| RTDStateError::DataSource { source })?
         {
             None => return Ok(false),
             Some(x) => x,
@@ -115,7 +116,7 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
             .data_source
             .read_packet_async()
             .await
-            .map_err(RTDStateError::DataSource)?
+            .map_err(|source| RTDStateError::DataSource { source })?
         {
             None => return Ok(false),
             Some(x) => x,
@@ -170,8 +171,7 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
             return Err(RTDStateFieldError::NoData);
         }
         let field_bytes = &self.data[real_index..real_index + length];
-        let mut field_str =
-            std::str::from_utf8(field_bytes).map_err(RTDStateFieldError::Utf8Error)?;
+        let mut field_str = std::str::from_utf8(field_bytes).context(Utf8Snafu)?;
         field_str = match justify {
             RTDFieldJustification::Left => field_str.trim_end(),
             RTDFieldJustification::Right => field_str.trim_start(),
@@ -195,11 +195,8 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
         length: usize,
         justify: RTDFieldJustification,
     ) -> Result<i32, RTDStateFieldError> {
-        self.field_str(item, length, justify).and_then(|field| {
-            field
-                .parse::<i32>()
-                .map_err(RTDStateFieldError::ParseIntError)
-        })
+        self.field_str(item, length, justify)
+            .and_then(|field| field.parse::<i32>().context(ParseIntSnafu))
     }
 
     /// Gets a boolean field from the state. Internally, Daktronics uses a space
@@ -215,46 +212,41 @@ impl<DS: data_source::RTDStateDataSource> RTDState<DS> {
 }
 
 /// An error returned from an [`RTDState`] operation
-#[derive(Debug)]
+#[derive(Debug, Snafu)]
 #[non_exhaustive]
 pub enum RTDStateError<DS: data_source::RTDStateDataSource> {
     /// The backing data source returned an error
-    DataSource(DS::Error),
+    #[snafu(display("data source error: {}", source))]
+    DataSource {
+        // not a real source since we don't require the data source to implement `std::error::Error`
+        #[snafu(source(false))]
+        source: DS::Error,
+    },
 }
-
-impl<DS: data_source::RTDStateDataSource> Display for RTDStateError<DS> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            RTDStateError::DataSource(err) => write!(f, "data source error: {}", err),
-        }
-    }
-}
-
-impl<DS: data_source::RTDStateDataSource> std::error::Error for RTDStateError<DS> {}
 
 /// An error occurring while reading a field from an [`RTDState`].
 ///
 /// As the sport implementations use the `RTDState::field_*` methods under the
 /// hood, they also return this in the event of an error.
-#[derive(Debug)]
+#[derive(Debug, Snafu)]
 #[non_exhaustive]
 pub enum RTDStateFieldError {
+    /// The field is empty or out-of-bounds, so no data can be read.
+    #[snafu(display("no data can be read from the field"))]
     NoData,
-    ParseIntError(ParseIntError),
-    Utf8Error(Utf8Error),
+    /// The field's contents couldn't be parsed as an int.
+    ///
+    /// This can happen if the sport is configured incorrectly, or if the data
+    /// is corrupted in some way.
+    #[snafu(display("failed to parse int from field: {}", source))]
+    ParseIntError { source: ParseIntError },
+    /// The field's contents couldn't be parsed as a string.
+    ///
+    /// This is unlikely to occur, as the [`Packet`] constructor already
+    /// validates RTD state.
+    #[snafu(display("failed to parse string from field: {}", source))]
+    Utf8Error { source: Utf8Error },
 }
-
-impl Display for RTDStateFieldError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            RTDStateFieldError::NoData => write!(f, "no data can be read"),
-            RTDStateFieldError::ParseIntError(e) => write!(f, "failed to parse int: {}", e),
-            RTDStateFieldError::Utf8Error(e) => write!(f, "failed to parse string: {}", e),
-        }
-    }
-}
-
-impl std::error::Error for RTDStateFieldError {}
 
 /// The justification of the field in the RTDState
 ///
