@@ -40,6 +40,14 @@ name = "dump_basketball_as_json"
 required-features = ["tokio-serial", "serde"]
 
 [[example]]
+name = "dump_wrestling_as_json"
+required-features = ["tokio-serial", "serde"]
+
+[[example]]
+name = "simulate_wrestling"
+required-features = ["tokio-serial"]
+
+[[example]]
 name = "read_data_buffer"
 
 [[example]]
